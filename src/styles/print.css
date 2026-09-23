@@ -1,0 +1,138 @@
+/* ==========================================================================
+   PSICOCALC CAMERA-READY CLINICAL REPORT PRINT STYLESHEET
+   Reference: survey_explorer_ui_reports/handoff.md § 2.5.2
+   ========================================================================== */
+
+@media print {
+  /* 1. Strip all Web Application UI Chrome */
+  header.app-nav,
+  aside.sidebar,
+  button,
+  .no-print,
+  .battery-toggle,
+  .quick-input-panel,
+  .status-toast,
+  .tooltip,
+  footer.app-footer {
+    display: none !important;
+  }
+
+  /* 2. Page Setup & Margins */
+  @page {
+    size: A4 portrait;
+    margin: 14mm 16mm 14mm 16mm;
+  }
+
+  html, body {
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111827 !important; /* Deep neutral for high contrast text */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 3. Page Break Discipline */
+  .page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 4. Medical / Editorial Typography for Report */
+  h1.report-title {
+    font-size: 15pt;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 2pt solid #1e3a8a;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+
+  h2.report-section {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #1e3a8a;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 2px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* 5. Transform Form Inputs into Static Text */
+  input, textarea, select {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    color: #000000 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+  }
+
+  /* 6. High-Precision Vector SVG Charts */
+  svg.psychometric-chart {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 250px;
+    display: block;
+    margin: 8px auto;
+  }
+
+  /* 7. Clinical Data Tables */
+  table.clinical-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    font-size: 9.5pt;
+  }
+
+  table.clinical-table th {
+    background-color: #f1f5f9 !important;
+    color: #1e293b;
+    border: 1px solid #94a3b8;
+    padding: 5px 8px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  table.clinical-table td {
+    border: 1px solid #cbd5e1;
+    padding: 4.5px 8px;
+  }
+
+  table.clinical-table tr.cit-row {
+    background-color: #eff6ff !important;
+    font-weight: 700;
+  }
+
+  /* 8. Signature Block */
+  .signature-block {
+    margin-top: 30px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

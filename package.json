@@ -1,0 +1,38 @@
+{
+  "name": "psicocalc",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --open",
+    "start": "vite --open",
+    "build": "tsc && vite build",
+    "preview": "vite preview --open",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:tier1": "vitest run src/tests/tier1_features",
+    "test:tier2": "vitest run src/tests/tier2_boundaries",
+    "test:tier3": "vitest run src/tests/tier3_cross_features",
+    "test:tier4": "vitest run src/tests/tier4_benchmarks",
+    "test:tier5": "vitest run src/tests/tier5_adversarial"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.441.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.11",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.6",
+    "vitest": "^2.1.1"
+  }
+}
