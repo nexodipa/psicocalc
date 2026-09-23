@@ -36,11 +36,11 @@ export const HtpModuleContainer: React.FC<HtpModuleContainerProps> = ({
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
 
   const updateRecord = (updater: (prev: HtpAssessmentRecord) => HtpAssessmentRecord) => {
-    setRecord((prev) => {
-      const next = updater(prev);
-      if (onRecordChange) onRecordChange(next);
-      return next;
-    });
+    const next = updater(record);
+    setRecord(next);
+    if (onRecordChange) {
+      onRecordChange(next);
+    }
   };
 
   const handleFormalChange = (patch: Partial<HtpFormalFeatures>) => {

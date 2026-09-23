@@ -7,7 +7,17 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
-    host: true,
+    host: 'localhost',
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173,
+    },
+  },
+  preview: {
+    port: 5173,
+    open: true,
+    host: 'localhost',
   },
   test: {
     globals: true,
