@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
 :: 2. Check and install dependencies if missing
 if not exist "node_modules\" (
     echo [INFO] Primera ejecucion detectada. Instalando librerias necesarias...
-    call npm install
+    call npm.cmd install
     if %errorlevel% neq 0 (
         echo [ERROR] No se pudieron instalar las dependencias con npm.
         pause
@@ -36,4 +36,5 @@ echo [INFO] Iniciando servidor Vite y abriendo aplicacion en el navegador...
 echo Para cerrar la aplicacion, cierre esta ventana o presione Ctrl+C.
 echo.
 
-call npm run dev -- --open
+call npm.cmd run dev -- --open
+pause
