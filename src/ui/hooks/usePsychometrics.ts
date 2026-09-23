@@ -10,9 +10,8 @@ import {
   calculateWaisIV,
   validateAgeAndBattery,
   validateScaledScore,
-  WISC_V_SUBTESTS,
-  WAIS_IV_SUBTESTS,
 } from '../../core';
+import { useOptionalClinicalSession } from '../context/ClinicalSessionContext';
 
 export interface UsePsychometricsReturn {
   battery: BatteryType;
@@ -66,7 +65,10 @@ const WAIS_IV_SAMPLES = {
   },
 };
 
-export function usePsychometrics(): UsePsychometricsReturn {
+/**
+ * Standalone hook implementation used when not wrapped in ClinicalSessionProvider
+ */
+function useStandalonePsychometrics(): UsePsychometricsReturn {
   const [battery, setBatteryState] = useState<BatteryType>('WISC-V');
 
   const [demographics, setDemographicsState] = useState<PatientDemographics>({
@@ -80,7 +82,6 @@ export function usePsychometrics(): UsePsychometricsReturn {
 
   const [originalName, setOriginalName] = useState<string>('Lucas Fernández Gómez');
 
-  // Subtest scores state
   const [subtests, setSubtests] = useState<Partial<Record<SubtestId, number>>>({
     S: 11,
     V: 11,
@@ -94,7 +95,6 @@ export function usePsychometrics(): UsePsychometricsReturn {
     BS: 9,
   });
 
-  // Raw string inputs to preserve what the user typed in the inputs
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({
     S: '11',
     V: '11',
@@ -108,10 +108,8 @@ export function usePsychometrics(): UsePsychometricsReturn {
     BS: '9',
   });
 
-  // Score validation errors per subtest
   const [invalidSubtests, setInvalidSubtests] = useState<Record<string, string>>({});
 
-  // Switch battery safely
   const setBattery = useCallback((newBattery: BatteryType) => {
     setBatteryState(newBattery);
     if (newBattery === 'WISC-V') {
@@ -236,12 +234,10 @@ export function usePsychometrics(): UsePsychometricsReturn {
     [battery]
   );
 
-  // Age validation
   const ageValidation = useMemo(() => {
     return validateAgeAndBattery(demographics.birthDate, demographics.testDate, battery);
   }, [demographics.birthDate, demographics.testDate, battery]);
 
-  // Execute psychometrics engine reactively
   const calculationResult = useMemo(() => {
     if (battery === 'WISC-V') {
       return calculateWiscV(subtests);
@@ -278,5 +274,48 @@ export function usePsychometrics(): UsePsychometricsReturn {
     invalidSubtests,
     hasInvalidScores,
     administeredSubtestCount,
+  };
+}
+
+/**
+ * Backward-compatible facade for usePsychometrics.
+ * If running within a ClinicalSessionProvider, delegates to the unified session.
+ * Otherwise, runs standalone state seamlessly.
+ */
+export function usePsychometrics(): UsePsychometricsReturn {
+  const session = useOptionalClinicalSession();
+  const standalone = useStandalonePsychometrics();
+
+  if (!session) {
+    return standalone;
+  }
+
+  const ageValidation =
+    session.currentBattery === 'WISC-V'
+      ? session.ageValidationWisc
+      : session.ageValidationWais;
+
+  return {
+    battery: session.currentBattery,
+    setBattery: session.setBattery,
+    demographics: session.demographics,
+    setDemographics: session.setDemographics,
+    toggleAnonymize: session.toggleAnonymize,
+    displayName: session.displayName,
+    subtests: session.subtests,
+    rawInputs: session.rawInputs,
+    setSubtestScore: session.setSubtestScore,
+    clearAllScores: session.clearAllScores,
+    loadSampleProfile: session.loadSampleProfile,
+    primaryIndices: session.primaryIndices,
+    cit: session.cit,
+    ancillaryIndices: session.ancillaryIndices,
+    discrepancies: session.discrepancies,
+    strengthsWeaknesses: session.strengthsWeaknesses,
+    isCompleteCit: session.isCompleteCit,
+    ageValidation,
+    invalidSubtests: session.invalidSubtests,
+    hasInvalidScores: session.hasInvalidScores,
+    administeredSubtestCount: session.administeredSubtestCount,
   };
 }

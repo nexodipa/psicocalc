@@ -1,6 +1,6 @@
 /* ==========================================================================
    PSICOCALC CAMERA-READY CLINICAL REPORT PRINT STYLESHEET
-   Reference: survey_explorer_ui_reports/handoff.md § 2.5.2
+   Reference: survey_explorer_ui_reports/handoff.md & ui_integration_plan.md
    ========================================================================== */
 
 @media print {
@@ -17,7 +17,7 @@
     display: none !important;
   }
 
-  /* 2. Page Setup & Margins */
+  /* 2. Page Setup & Margins (Strict A4 Portrait) */
   @page {
     size: A4 portrait;
     margin: 14mm 16mm 14mm 16mm;
@@ -48,13 +48,21 @@
   }
 
   .print-page-break {
-    page-break-before: always;
-    break-before: page;
+    page-break-before: always !important;
+    break-before: page !important;
+    height: 0;
+    margin: 0;
+    border: none;
   }
 
-  .avoid-break {
+  .avoid-break,
+  .report-instrument-section {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  .report-instrument-section {
+    margin-bottom: 18px;
   }
 
   /* 4. Medical / Editorial Typography for Report */
@@ -68,8 +76,8 @@
   }
 
   h2.report-section {
-    font-size: 12pt;
-    font-weight: 600;
+    font-size: 11pt;
+    font-weight: 700;
     color: #1e3a8a;
     border-bottom: 1px solid #cbd5e1;
     padding-bottom: 2px;
@@ -93,12 +101,15 @@
   }
 
   /* 6. High-Precision Vector SVG Charts */
-  svg.psychometric-chart {
+  svg.psychometric-chart,
+  svg.sdq-chart {
     width: 100% !important;
     height: auto !important;
-    max-height: 250px;
-    display: block;
+    max-height: 230px !important;
+    display: block !important;
     margin: 8px auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   /* 7. Clinical Data Tables */
@@ -108,6 +119,8 @@
     margin-top: 6px;
     margin-bottom: 12px;
     font-size: 9.5pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   table.clinical-table th {
@@ -129,10 +142,35 @@
     font-weight: 700;
   }
 
-  /* 8. Signature Block */
+  table.clinical-table tr.severity-normal {
+    background-color: #f0fdf4 !important;
+  }
+
+  table.clinical-table tr.severity-borderline {
+    background-color: #fefce8 !important;
+  }
+
+  table.clinical-table tr.severity-clinical {
+    background-color: #fef2f2 !important;
+    font-weight: 600;
+  }
+
+  /* 8. Deontological Critical Alert Banner in Print */
+  .print-critical-alert {
+    border: 2pt solid #b91c1c !important;
+    background-color: #fef2f2 !important;
+    color: #7f1d1d !important;
+    padding: 8px 12px !important;
+    margin: 10px 0 !important;
+    border-radius: 6px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 9. Signature Block */
   .signature-block {
-    margin-top: 30px;
-    page-break-inside: avoid;
-    break-inside: avoid;
+    margin-top: 24px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

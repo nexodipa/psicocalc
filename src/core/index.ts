@@ -23,3 +23,12 @@ export * from './engine/wais_iv_calculator';
 // Discrepancy & scatter profile engines
 export * from './engine/discrepancy';
 export * from './engine/scatter';
+
+// Clinical psychometrics (SDQ, PHQ-9, GAD-7, MoCA)
+export * from './types/clinical';
+export * from './tables/clinicalNorms';
+export * from './engine/clinicalCalculators';
+
+// Projective qualitative evaluation (HTP: Casa-Árbol-Persona)
+export * from './types/htp';
+export * from './engine/htpNarrativeEngine';
