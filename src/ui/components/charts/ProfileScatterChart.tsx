@@ -112,11 +112,11 @@ export const ProfileScatterChart: React.FC<ProfileScatterChartProps> = ({
               Gráfico de Dispersión y Perfil Cognitivo de Subtests
             </h3>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-              Vectorial Puro (0 KB)
+              Perfil de puntuaciones
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Puntuaciones escalares (PE 1 – 19), media personal ($\bar&#123;PE&#125; = {subjectMean}$) y análisis ipsativo de fortalezas/debilidades
+            Puntuaciones escalares (PE 1 – 19), media personal ({subjectMean}) y comparación entre subtests
           </p>
         </div>
 

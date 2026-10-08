@@ -46,7 +46,7 @@ describe('UI Smoke & Component Tests (Psicocalc M2 & M3)', () => {
       );
 
       expect(screen.getByText('PSICOCALC')).toBeDefined();
-      expect(screen.getByText('Clínico')).toBeDefined();
+      expect(screen.getByText('Demo técnica')).toBeDefined();
       expect(screen.getByText('Calculadora')).toBeDefined();
       expect(screen.getByText('Informe Clínico')).toBeDefined();
       expect(screen.getByText('Imprimir / Guardar PDF')).toBeDefined();

@@ -34,11 +34,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                     PSICOCALC
                   </h1>
                   <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
-                    Clínico
+                    Demo técnica
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 font-medium hidden sm:block">
-                  Plataforma Psicométrica y Generador de Informes WISC-V / WAIS-IV
+                  Interfaz de demostración WISC-V / WAIS-IV · Sin validación clínica acreditada
                 </p>
               </div>
             </div>

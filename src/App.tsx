@@ -86,6 +86,10 @@ const AppContent: React.FC = () => {
 
       {/* 2. Main Content Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <aside aria-label="Alcance de la demostración" className="mb-6 border-l-4 border-amber-600 bg-amber-50 p-4 text-sm text-slate-900 print:hidden">
+          <strong>Demostración técnica, no validada para uso clínico ni pericial.</strong>
+          <p>Los nombres, fechas, credenciales y puntuaciones precargados son ejemplos sintéticos del programa. No introduzcas datos de pacientes. Los cálculos, interpretaciones e informes no deben usarse para diagnóstico ni decisiones sobre personas.</p>
+        </aside>
         {/* Multimodal Navigation Bar */}
         <MultimodalNav onPrint={handlePrint} />
 
@@ -158,10 +162,10 @@ const AppContent: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-sm">
-                    Informe Pericial y Clínico Integrado Listo
+                    Vista de informe de demostración
                   </h4>
                   <p className="text-xs text-blue-200">
-                    Previsualice el informe editorial formal A4 con narrativa diagnóstica automatizada, baremos multitest y firma pericial.
+                    Ejemplo de composición A4 con resultados y texto generado. No es un informe clínico ni pericial válido.
                   </p>
                 </div>
               </div>
@@ -244,12 +248,12 @@ const AppContent: React.FC = () => {
       <footer className="app-footer no-print border-t border-slate-200 bg-white py-4 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">Psicocalc v2.0 Clínico</span>
+            <span className="font-bold text-slate-700">Psicocalc · Demostración técnica</span>
             <span>—</span>
-            <span>Plataforma Multimodal de Evaluación Psicométrica y Pericial</span>
+            <span>Interfaz de puntuaciones y documentos de muestra</span>
           </div>
           <div>
-            <span>100% Offline y Privado — Los datos no salen de su navegador</span>
+            <span>Usa únicamente datos sintéticos. No es un sistema de historia clínica.</span>
           </div>
         </div>
       </footer>

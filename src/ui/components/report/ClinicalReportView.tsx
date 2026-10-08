@@ -86,6 +86,10 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
       className="max-w-4xl mx-auto my-6 bg-white border border-slate-200 shadow-xl rounded-2xl p-6 sm:p-10 page-container print:p-0 print:border-none print:shadow-none print:m-0 print:max-w-full space-y-6"
       data-testid="clinical-report-view"
     >
+      <aside className="border-2 border-amber-700 p-3 text-sm text-slate-900 avoid-break" aria-label="Aviso del informe de demostración">
+        <strong>DOCUMENTO DE DEMOSTRACIÓN. SIN VALIDEZ CLÍNICA NI PERICIAL.</strong>
+        <p>Las identidades precargadas son sintéticas. Las puntuaciones y el texto generado no acreditan evaluación, diagnóstico ni firma profesional. No usar para decisiones sobre personas.</p>
+      </aside>
       {/* =================================================================== */}
       {/* 1. Institutional Header & Demographics                              */}
       {/* =================================================================== */}

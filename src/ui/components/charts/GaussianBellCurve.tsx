@@ -114,7 +114,7 @@ export const GaussianBellCurve: React.FC<GaussianBellCurveProps> = ({
               Distribución Normal de Gauss y Zonas Diagnósticas
             </h3>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">
-              Puntuaciones Compuestas ($\mu=100, \sigma=15$)
+              Puntuaciones compuestas (media 100, desviación típica 15)
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
