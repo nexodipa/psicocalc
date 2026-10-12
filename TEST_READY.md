@@ -1,10 +1,13 @@
 # TEST_READY — Psicocalc Automated Test Harness (Tiers 1–4)
 
+> **Nota (octubre 2026):** informe interno generado durante el desarrollo. No es una auditoría independiente, una certificación ni una validación clínica. Las conversiones de índices se calculan por interpolación entre puntos de anclaje y no equivalen a los baremos oficiales de ninguna prueba comercial.
+
+
 **Status**: READY FOR VERIFICATION & CONTINUOUS INTEGRATION  
 **Track**: E2E Testing Track (Milestone M-E2E)  
 **Framework**: Vitest 2.1.x / JSDOM / TypeScript 5.5+  
 **Target Coverage**: > 180 tests required | **248 automated tests implemented**  
-**Psychometric Accuracy**: 100% exact mathematical precision against official Pearson / COP Wechsler standardization  
+**Psychometric Accuracy**: not validated against official norms. The tests check internal consistency of the implemented interpolation curves, not agreement with any publisher manual.  
 
 ---
 
@@ -18,7 +21,7 @@ The test suite operates strictly as an **opaque-box, requirement-driven testing 
 3. Exact chronological age calculations, leap year transitions, and strict battery cutoff gating (WISC-V: 6:0 to 16:11; WAIS-IV: 16:0 to 90:11).
 4. Pairwise statistical discrepancy matrices, critical difference values at $p < .05$ and $p < .01$, base rate indications, and ipsative personal strengths/weaknesses scatter analysis.
 5. Strict subtest substitution rules ($\le 1$ substitution per protocol, prohibition of Cubos substitution in WISC-V CIT).
-6. Six (6) complete real-world clinical benchmark cases (3 for WISC-V, 3 for WAIS-IV) tested for 100% mathematical precision across all cognitive indices and discrepancy profiles.
+6. Six (6) complete real-world clinical benchmark cases (3 for WISC-V, 3 for WAIS-IV) used as regression fixtures for the implemented calculations; they are not clinical validation.
 
 ---
 
