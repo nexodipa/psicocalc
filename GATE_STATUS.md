@@ -1,10 +1,13 @@
 # GATE_STATUS — Psicocalc Final Accreditation & Delivery
 
+> **Nota (octubre 2026):** informe interno generado durante el desarrollo. No es una auditoría independiente, una certificación ni una validación clínica. Las conversiones de índices se calculan por interpolación entre puntos de anclaje y no equivalen a los baremos oficiales de ninguna prueba comercial.
+
+
 **Project**: Psicocalc — Plataforma Web Psicométrica para WISC-V y WAIS-IV  
 **Milestone**: M4 (Final Milestone: E2E Verification & Adversarial Hardening Tier 5)  
 **Date**: 2026-09-22T22:58:00Z  
-**Verdict**: 🟢 **PASS / CERTIFIED FOR PRODUCTION**  
-**Forensic Integrity Verdict**: 🟢 **CLEAN (Zero Shortcuts, Real Math Engine, 100% Genuine)**  
+**Verdict**: development test suite passing. This is not a clinical certification and does not make the software production-ready for clinical use.  
+**Internal code review note**: no hard-coded test shortcuts were found by the internal review; this is not an independent audit.  
 
 ---
 
@@ -83,6 +86,6 @@
 
 ## 5. Certification Verdict
 
-The Psicocalc platform satisfies all functional and non-functional requirements in `ORIGINAL_REQUEST.md` with zero defects, authentic mathematical modeling, 100% test coverage, and complete production readiness.
+The Psicocalc platform satisfies all functional and non-functional requirements in `ORIGINAL_REQUEST.md` as a technical demonstration. The test suite passes; this does not establish zero defects, clinical accuracy or production readiness.
 
-**Final Gate Status**: 🟢 **PASS — READY FOR DEPLOYMENT**
+**Final Gate Status**: development tests passing; for demonstration use only.

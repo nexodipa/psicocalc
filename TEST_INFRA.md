@@ -1,9 +1,12 @@
 # E2E Test Infra: Psicocalc
 
+> **Nota (octubre 2026):** informe interno generado durante el desarrollo. No es una auditoría independiente, una certificación ni una validación clínica. Las conversiones de índices se calculan por interpolación entre puntos de anclaje y no equivalen a los baremos oficiales de ninguna prueba comercial.
+
+
 ## Test Philosophy
 - Opaque-box, requirement-driven. No dependency on implementation design.
 - Methodology: Category-Partition + Boundary Value Analysis (BVA) + Pairwise Combinatorial Testing + Real-World Workload Testing.
-- 100% mathematical precision for psychometric conversions, standard composite scores, percentiles, and confidence intervals.
+- Mathematical consistency of the implemented conversions, composite scores, percentiles and confidence intervals. This is not validation against official norms.
 
 ## Feature Inventory
 | # | Feature | Source (Requirement) | Tier 1 | Tier 2 | Tier 3 |

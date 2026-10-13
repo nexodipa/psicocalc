@@ -39,7 +39,7 @@ export const SignatureBlock: React.FC<SignatureBlockProps> = ({
             En Madrid, a {formattedDate}.
           </p>
           <p className="text-[11px] text-slate-500 pt-3 max-w-xs">
-            Certificación pericial emitida conforme a los estándares de evaluación psicológica y deontológicos del Colegio Oficial de la Psicología.
+            Espacio de firma de ejemplo. Documento de demostración, sin validez clínica ni pericial.
           </p>
         </div>
 

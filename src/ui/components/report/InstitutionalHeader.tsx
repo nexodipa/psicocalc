@@ -28,7 +28,7 @@ export const InstitutionalHeader: React.FC<InstitutionalHeaderProps> = ({
               Centro de Neuropsicología y Psicología Clínica
             </h2>
             <p className="text-[11px] text-slate-500 font-medium">
-              Unidad Especializada de Evaluación Neurocognitiva y Diagnóstico Pericial
+              Encabezado de ejemplo para un documento de demostración
             </p>
           </div>
         </div>

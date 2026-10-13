@@ -17,7 +17,7 @@ Psicocalc está estructurada siguiendo una separación estricta entre el dominio
    - Hoja de estilos `@media print` (`print.css`): supresión total de controles de interfaz web, paginación limpia sin cortes huérfanos y renderizado vectorial nítido para exportación PDF en 1 clic vía `window.print()`.
 
 3. **`src/tests/` (Suite de Pruebas Automatizadas en Vitest)**:
-   - Arquitectura de pruebas de 4 Tiers (Tiers 1-4) derivada de requerimientos de usuario para validación con 100% de precisión matemática.
+   - Arquitectura de pruebas de 4 Tiers (Tiers 1-4) derivada de requerimientos de usuario para comprobar la coherencia matemática interna (no es validación contra baremos oficiales).
 
 4. **Entorno de Ejecución Local en Windows**:
    - Scripts `start.bat` y `launch.bat` que verifican Node.js, instalan dependencias y ejecutan Vite en modo `--open`.
@@ -56,7 +56,7 @@ Psicocalc está estructurada siguiendo una separación estricta entre el dominio
 | 27 | Tier 1: Cobertura Funcional | $\ge 5$ pruebas por subtest, índice, reglas de validación y conversiones | M-E2E | Survey Tech Explorer |
 | 28 | Tier 2: Casos Límite y Suelo/Techo | $\ge 5$ pruebas para suelo ($1$), techo ($19$), edades límite y datos malformados | M-E2E | Survey Tech Explorer |
 | 29 | Tier 3: Combinaciones Cruzadas | Pruebas de matrices de discrepancia, análisis de dispersión F/D y sustitución | M-E2E | Survey Tech Explorer |
-| 30 | Tier 4: Casos Testigo Clínicos Reales | 6 casos clínicos benchmark completos (3 WISC-V y 3 WAIS-IV) con 100% de precisión matemática | M-E2E | Survey Tech Explorer |
+| 30 | Tier 4: Casos Testigo Clínicos Reales | 6 casos clínicos benchmark completos (3 WISC-V y 3 WAIS-IV) como casos de regresión de los cálculos implementados (no es validación clínica) | M-E2E | Survey Tech Explorer |
 | 31 | Acreditación Final E2E y Tier 5 | Ejecución del 100% de la suite de pruebas E2E y endurecimiento adversarial Tier 5 | M4 | Project Orchestrator |
 
 ---
@@ -68,7 +68,7 @@ Psicocalc está estructurada siguiendo una separación estricta entre el dominio
 | **M1** | Core Psychometric & Math Engine | Tipos puros, modelos de conversión, tablas normativas WISC-V y WAIS-IV, SEM/CI, percentiles, discrepancias, validadores (F1-F16) | none | DONE (Audit CLEAN, 329 tests passing, 0 errors) |
 | **M2** | Interactive UI, Rapid Entry & Reactive Charts | UI React/Tailwind, entrada rápida por teclado, validación reactiva, perfil cognitivo SVG y campana de Gauss SVG (F17-F20) | M1 | DONE (Implementado y verificado, componentes reactivos, 0 KB libs externas) |
 | **M3** | Clinical Report Engine, PDF Export & 1-Click Launch | Reporte pericial A4, anonimización, narrativa automática, `@media print` para PDF limpio en 1-clic, `start.bat`/`launch.bat` (F21-F25) | M1, M2 | DONE (Implementado y empaquetado, dist/ generado, start.bat verificado) |
-| **M4** | Final Milestone & Adversarial Hardening | Fase 1: 100% de pase de pruebas E2E (Tiers 1-4). Fase 2: Auditoría forense y endurecimiento adversarial Tier 5 (F31) | M-E2E, M3 | DONE (Tier 5 implementado, auditoría forense 100% CLEAN, producción lista) |
+| **M4** | Final Milestone & Adversarial Hardening | Fase 1: 100% de pase de pruebas E2E (Tiers 1-4). Fase 2: Auditoría forense y endurecimiento adversarial Tier 5 (F31) | M-E2E, M3 | DONE (Tier 5 implementado; revisión interna de código, no auditoría independiente; solo para demostración) |
 
 ---
 
