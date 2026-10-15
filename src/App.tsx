@@ -18,6 +18,15 @@ import { Phq9InputCard } from './ui/components/clinical/Phq9InputCard';
 import { Gad7InputCard } from './ui/components/clinical/Gad7InputCard';
 import { MocaInputCard } from './ui/components/clinical/MocaInputCard';
 import { HtpModuleContainer } from './ui/components/htp/HtpModuleContainer';
+import { CatalogExplorer } from './ui/components/catalog/CatalogExplorer';
+import {
+  LikertMatrixInputCard,
+  SpeedAccuracyInputCard,
+  DomainChecklistScreeningCard,
+  BaseRateMultiScaleCard,
+  AdaptiveSkillDomainCard,
+  Raven2InputCard,
+} from './ui/components/forms';
 import { FileText, ArrowRight, Printer } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -44,8 +53,6 @@ const AppContent: React.FC = () => {
     loadSampleProfile,
     primaryIndices,
     cit,
-    ancillaryIndices,
-    discrepancies,
     strengthsWeaknesses,
     isCompleteCit,
     ageValidation,
@@ -58,14 +65,18 @@ const AppContent: React.FC = () => {
     window.print();
   }, []);
 
-  // Header tab toggle: 'calculator' maps to active instrument views, 'report' maps to clinical report view
-  const headerActiveTab = activeCategory === 'report' ? 'report' : 'calculator';
+  // Header tab toggle: 'calculator' maps to active instrument views, 'report' maps to clinical report view, 'catalog' maps to catalog
+  const headerActiveTab =
+    activeCategory === 'report' ? 'report' : activeCategory === 'catalog' ? 'catalog' : 'calculator';
+
   const handleSelectHeaderTab = useCallback(
-    (tab: 'calculator' | 'report') => {
+    (tab: 'calculator' | 'report' | 'catalog') => {
       if (tab === 'report') {
         setActiveCategory('report');
+      } else if (tab === 'catalog') {
+        setActiveCategory('catalog');
       } else {
-        if (activeCategory === 'report') {
+        if (activeCategory === 'report' || activeCategory === 'catalog') {
           setActiveCategory('intelligence');
         }
       }
@@ -82,134 +93,203 @@ const AppContent: React.FC = () => {
         activeTab={headerActiveTab}
         onSelectTab={handleSelectHeaderTab}
         onPrint={handlePrint}
+        onToggleAnonymize={toggleAnonymize}
+        isAnonymized={demographics.isAnonymized}
       />
 
       {/* 2. Main Content Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <aside aria-label="Alcance de la demostración" className="mb-6 border-l-4 border-amber-600 bg-amber-50 p-4 text-sm text-slate-900 print:hidden">
+        <aside
+          aria-label="Alcance de la demostración"
+          className="mb-6 border-l-4 border-amber-600 bg-amber-50 p-4 text-sm text-slate-900 print:hidden"
+        >
           <strong>Demostración técnica, no validada para uso clínico ni pericial.</strong>
-          <p>Los nombres, fechas, credenciales y puntuaciones precargados son ejemplos sintéticos del programa. No introduzcas datos de pacientes. Los cálculos, interpretaciones e informes no deben usarse para diagnóstico ni decisiones sobre personas.</p>
+          <p>
+            Los nombres, fechas, credenciales y puntuaciones precargados son ejemplos sintéticos del
+            programa. No introduzcas datos de pacientes. Los cálculos, interpretaciones e informes
+            no deben usarse para diagnóstico ni decisiones sobre personas.
+          </p>
         </aside>
+
         {/* Multimodal Navigation Bar */}
         <MultimodalNav onPrint={handlePrint} />
 
         {/* =================================================================== */}
-        {/* On-screen view: Intelligence & Cognition (WISC-V / WAIS-IV)        */}
+        {/* On-screen view: Universal Catalog Explorer                         */}
         {/* =================================================================== */}
-        {activeCategory === 'intelligence' && (
-          <div className="space-y-6 block print:hidden" data-testid="intelligence-module">
-            {/* Validation Alert Banner */}
-            <ValidationBanner
-              battery={battery}
-              invalidSubtests={invalidSubtests}
-              hasInvalidScores={hasInvalidScores}
-              ageValidation={ageValidation}
-              isCompleteCit={isCompleteCit}
-              administeredSubtestCount={administeredSubtestCount}
-            />
+        {activeCategory === 'catalog' && (
+          <div className="space-y-6 block print:hidden" data-testid="catalog-module">
+            <CatalogExplorer />
+          </div>
+        )}
 
-            {/* Demographics Card */}
-            <DemographicsCard
-              battery={battery}
-              demographics={demographics}
-              onUpdateDemographics={setDemographics}
-              onToggleAnonymize={toggleAnonymize}
-              displayName={displayName}
-              ageValidation={ageValidation}
-            />
-
-            {/* Real-Time Composite Score Metric Cards */}
-            <CompositeScoreCards
-              battery={battery}
-              cit={cit}
-              primaryIndices={primaryIndices}
-              isCompleteCit={isCompleteCit}
-              hasInvalidScores={hasInvalidScores}
-            />
-
-            {/* Fast Keyboard-First Subtests Input Grid */}
-            <SubtestInputGrid
-              battery={battery}
-              subtests={subtests}
-              rawInputs={rawInputs}
-              invalidSubtests={invalidSubtests}
-              onSetScore={setSubtestScore}
-              onClearAll={clearAllScores}
-              onLoadSample={loadSampleProfile}
-            />
-
-            {/* Pure React Vector SVG Charts Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <ProfileScatterChart
+        {/* =================================================================== */}
+        {/* On-screen view: Intelligence & Cognition (WISC-V / WAIS-IV / Raven 2) */}
+        {/* =================================================================== */}
+        {(activeCategory === 'intelligence' ||
+          (activeCategory === 'intelligence_aptitudes' && activeInstrument !== 'raven_2')) &&
+          activeInstrument !== 'raven_2' && (
+            <div className="space-y-6 block print:hidden" data-testid="intelligence-module">
+              {/* Validation Alert Banner */}
+              <ValidationBanner
                 battery={battery}
-                subtests={subtests}
-                strengthsWeaknesses={strengthsWeaknesses}
+                invalidSubtests={invalidSubtests}
+                hasInvalidScores={hasInvalidScores}
+                ageValidation={ageValidation}
+                isCompleteCit={isCompleteCit}
+                administeredSubtestCount={administeredSubtestCount}
               />
 
-              <GaussianBellCurve
+              {/* Demographics Card */}
+              <DemographicsCard
+                battery={battery}
+                demographics={demographics}
+                onUpdateDemographics={setDemographics}
+                onToggleAnonymize={toggleAnonymize}
+                displayName={displayName}
+                ageValidation={ageValidation}
+              />
+
+              {/* Real-Time Composite Score Metric Cards */}
+              <CompositeScoreCards
                 battery={battery}
                 cit={cit}
                 primaryIndices={primaryIndices}
                 isCompleteCit={isCompleteCit}
+                hasInvalidScores={hasInvalidScores}
               />
-            </div>
 
-            {/* Quick CTA to jump to Formal Clinical Report */}
-            <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm no-print">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">
-                    Vista de informe de demostración
-                  </h4>
-                  <p className="text-xs text-blue-200">
-                    Ejemplo de composición A4 con resultados y texto generado. No es un informe clínico ni pericial válido.
-                  </p>
-                </div>
+              {/* Fast Keyboard-First Subtests Input Grid */}
+              <SubtestInputGrid
+                battery={battery}
+                subtests={subtests}
+                rawInputs={rawInputs}
+                invalidSubtests={invalidSubtests}
+                onSetScore={setSubtestScore}
+                onClearAll={clearAllScores}
+                onLoadSample={loadSampleProfile}
+              />
+
+              {/* Pure React Vector SVG Charts Grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <ProfileScatterChart
+                  battery={battery}
+                  subtests={subtests}
+                  strengthsWeaknesses={strengthsWeaknesses}
+                />
+
+                <GaussianBellCurve
+                  battery={battery}
+                  cit={cit}
+                  primaryIndices={primaryIndices}
+                  isCompleteCit={isCompleteCit}
+                />
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('report')}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white text-blue-950 hover:bg-blue-50 transition-all shadow-sm"
-                >
-                  <span>Ver Informe Clínico</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+              {/* Quick CTA to jump to Formal Clinical Report */}
+              <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm no-print">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm">Vista de informe de demostración</h4>
+                    <p className="text-xs text-blue-200">
+                      Ejemplo de composición A4 con resultados y texto generado. No es un informe clínico
+                      ni pericial válido.
+                    </p>
+                  </div>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Imprimir PDF</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCategory('report')}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white text-blue-950 hover:bg-blue-50 transition-all shadow-sm"
+                  >
+                    <span>Ver Informe Clínico</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handlePrint}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Imprimir PDF</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+        {/* Raven 2 Nonverbal Intelligence View */}
+        {(activeCategory === 'intelligence_aptitudes' || activeCategory === 'intelligence') &&
+          activeInstrument === 'raven_2' && (
+            <div className="space-y-6 block print:hidden" data-testid="raven-module">
+              <Raven2InputCard />
+            </div>
+          )}
 
         {/* =================================================================== */}
-        {/* On-screen view: Behavior & Emotion (SDQ, PHQ-9, GAD-7)             */}
+        {/* On-screen view: Behavior & Emotion (SDQ, PHQ-9, GAD-7, SENA, CBCL, BYI-2) */}
         {/* =================================================================== */}
-        {activeCategory === 'behavior_emotion' && (
+        {(activeCategory === 'behavior_emotion' ||
+          activeCategory === 'child_adolescent_emotional') && (
           <div className="space-y-6 block print:hidden" data-testid="behavior-module">
             {activeInstrument === 'sdq' && <SdqInputCard />}
             {activeInstrument === 'phq_9' && <Phq9InputCard />}
             {activeInstrument === 'gad_7' && <Gad7InputCard />}
+            {activeInstrument === 'sena' && <LikertMatrixInputCard batteryId="sena" />}
+            {activeInstrument === 'cbcl' && <LikertMatrixInputCard batteryId="cbcl" />}
+            {activeInstrument === 'byi_2' && <LikertMatrixInputCard batteryId="byi_2" />}
           </div>
         )}
 
         {/* =================================================================== */}
-        {/* On-screen view: Neurocognitive Screening (MoCA)                    */}
+        {/* On-screen view: Neurocognitive Screening & Attention               */}
         {/* =================================================================== */}
-        {activeCategory === 'neurocognitive' && (
+        {(activeCategory === 'neurocognitive' ||
+          activeCategory === 'neuropsychology_attention') && (
           <div className="space-y-6 block print:hidden" data-testid="neurocognitive-module">
-            <MocaInputCard />
+            {activeInstrument === 'moca' && <MocaInputCard />}
+            {activeInstrument === 'd2_r' && <SpeedAccuracyInputCard />}
+            {activeInstrument === 'neuropsi_breve' && (
+              <DomainChecklistScreeningCard instrumentId="neuropsi_breve" />
+            )}
+            {activeInstrument === 'mmse' && (
+              <DomainChecklistScreeningCard instrumentId="mmse" />
+            )}
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* On-screen view: Personality & Psychopathology (MMPI-3, PAI, MCMI-IV) */}
+        {/* =================================================================== */}
+        {activeCategory === 'personality_psychopathology' && (
+          <div className="space-y-6 block print:hidden" data-testid="personality-module">
+            {activeInstrument === 'mmpi_3' && <LikertMatrixInputCard batteryId="mmpi_3" />}
+            {activeInstrument === 'pai' && <LikertMatrixInputCard batteryId="pai" />}
+            {activeInstrument === 'mcmi_iv' && <BaseRateMultiScaleCard />}
+            {!['mmpi_3', 'pai', 'mcmi_iv'].includes(activeInstrument) && (
+              <LikertMatrixInputCard batteryId="mmpi_3" />
+            )}
+          </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* On-screen view: Adaptive Behavior & Development (ABAS-3, Vineland-3)*/}
+        {/* =================================================================== */}
+        {activeCategory === 'adaptive_behavior' && (
+          <div className="space-y-6 block print:hidden" data-testid="adaptive-module">
+            {activeInstrument === 'abas_3' && <AdaptiveSkillDomainCard batteryId="abas_3" />}
+            {activeInstrument === 'vineland_3' && (
+              <AdaptiveSkillDomainCard batteryId="vineland_3" />
+            )}
+            {!['abas_3', 'vineland_3'].includes(activeInstrument) && (
+              <AdaptiveSkillDomainCard batteryId="abas_3" />
+            )}
           </div>
         )}
 

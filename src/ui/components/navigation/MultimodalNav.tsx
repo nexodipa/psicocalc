@@ -1,6 +1,7 @@
 import React from 'react';
 import { useClinicalSession } from '../../context/ClinicalSessionContext';
 import { ClinicalCategory, ClinicalInstrument } from '../../context/ClinicalSessionTypes';
+import { TestRegistry } from '../../../core/registry/TestRegistry';
 import {
   Brain,
   Smile,
@@ -14,6 +15,8 @@ import {
   Printer,
   ShieldCheck,
   ShieldAlert,
+  Layers,
+  Plus,
 } from 'lucide-react';
 
 interface MultimodalNavProps {
@@ -35,6 +38,8 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
     loadDemoSession,
     setBattery,
     currentBattery,
+    activeBatteryIds,
+    activateBattery,
   } = useClinicalSession();
 
   const categories: {
@@ -45,6 +50,11 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
     hasWarningAlert?: boolean;
     isCompleted?: boolean;
   }[] = [
+    {
+      id: 'catalog',
+      name: 'Catálogo Universal',
+      icon: <Layers className="w-4 h-4 text-blue-500" />,
+    },
     {
       id: 'intelligence',
       name: 'Inteligencia & Cognición',
@@ -80,30 +90,55 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
 
   const handleCategoryClick = (catId: ClinicalCategory) => {
     setActiveCategory(catId);
+    if (catId === 'catalog') {
+      // Show catalog
+      return;
+    }
     if (catId === 'intelligence') {
       setActiveInstrument(currentBattery === 'WISC-V' ? 'wisc_v' : 'wais_iv');
     } else if (catId === 'behavior_emotion') {
-      if (!['sdq', 'phq_9', 'gad_7'].includes(activeInstrument)) {
+      if (!['sdq', 'phq_9', 'gad_7', 'sena', 'cbcl', 'byi_2'].includes(activeInstrument)) {
         setActiveInstrument('sdq');
       }
     } else if (catId === 'neurocognitive') {
-      setActiveInstrument('moca');
+      if (!['moca', 'd2_r', 'neuropsi_breve', 'mmse'].includes(activeInstrument)) {
+        setActiveInstrument('moca');
+      }
     } else if (catId === 'projective') {
       setActiveInstrument('htp');
     }
   };
 
   const handleInstrumentClick = (instId: ClinicalInstrument) => {
+    activateBattery(instId);
     setActiveInstrument(instId);
     if (instId === 'wisc_v') {
       setBattery('WISC-V');
+      setActiveCategory('intelligence');
     } else if (instId === 'wais_iv') {
       setBattery('WAIS-IV');
+      setActiveCategory('intelligence');
+    } else if (['sdq', 'phq_9', 'gad_7', 'sena', 'cbcl', 'byi_2'].includes(instId)) {
+      setActiveCategory('behavior_emotion');
+    } else if (['moca', 'd2_r', 'neuropsi_breve', 'mmse'].includes(instId)) {
+      setActiveCategory('neurocognitive');
+    } else if (instId === 'htp') {
+      setActiveCategory('projective');
+    } else if (['mmpi_3', 'pai', 'mcmi_iv'].includes(instId)) {
+      setActiveCategory('personality_psychopathology');
+    } else if (['abas_3', 'vineland_3'].includes(instId)) {
+      setActiveCategory('adaptive_behavior');
+    } else if (instId === 'raven_2') {
+      setActiveCategory('intelligence_aptitudes');
     }
   };
 
   const handleReset = () => {
-    if (window.confirm('¿Está seguro de que desea reiniciar la sesión clínica? Se borrarán las respuestas no guardadas.')) {
+    if (
+      window.confirm(
+        '¿Está seguro de que desea reiniciar la sesión clínica? Se borrarán las respuestas no guardadas.'
+      )
+    ) {
       resetFullSession();
     }
   };
@@ -117,7 +152,9 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400 font-medium">Evaluado:</span>
             <span className="text-xs font-bold text-white tracking-wide">
-              {demographics.isAnonymized ? demographics.nameOrId : (demographics.nameOrId || 'Sin asignar')}
+              {demographics.isAnonymized
+                ? demographics.nameOrId
+                : demographics.nameOrId || 'Sin asignar'}
             </span>
           </div>
 
@@ -238,13 +275,51 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
         </nav>
       </div>
 
+      {/* 2.5 Active Batteries Dropdown & Quick Adder */}
+      <div className="bg-slate-100/90 rounded-xl p-1.5 border border-slate-200/80 flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="active-battery-select"
+            className="text-[11px] font-bold text-slate-500 uppercase px-1 shrink-0 flex items-center gap-1"
+          >
+            <Layers className="w-3.5 h-3.5 text-slate-400" />
+            <span>Batería en Sesión:</span>
+          </label>
+          <select
+            id="active-battery-select"
+            aria-label="Seleccionar batería activa"
+            value={activeInstrument}
+            onChange={(e) => handleInstrumentClick(e.target.value)}
+            className="bg-white border border-slate-200 text-xs font-bold text-slate-800 rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+          >
+            {activeBatteryIds.map((bId) => {
+              const def = TestRegistry.get(bId);
+              return (
+                <option key={bId} value={bId}>
+                  {def?.metadata.name || bId} — {def?.metadata.fullName || bId}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setActiveCategory('catalog')}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all shrink-0"
+        >
+          <Plus className="w-3 h-3" />
+          <span>Explorar Catálogo</span>
+        </button>
+      </div>
+
       {/* 3. Secondary Sub-tabs for Current Category */}
-      {activeCategory === 'intelligence' && (
+      {(activeCategory === 'intelligence' || activeCategory === 'intelligence_aptitudes') && (
         <div className="bg-slate-100/90 rounded-xl p-1.5 border border-slate-200/80 flex items-center gap-2">
           <span className="text-[11px] font-bold text-slate-500 uppercase px-2">
-            Batería Wechsler:
+            Inteligencia & Aptitudes:
           </span>
-          <div className="flex items-center gap-1 flex-1">
+          <div className="flex items-center gap-1 flex-1 flex-wrap">
             <button
               type="button"
               onClick={() => handleInstrumentClick('wisc_v')}
@@ -276,16 +351,31 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               )}
             </button>
+
+            {activeBatteryIds.includes('raven_2') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('raven_2')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'raven_2'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>Raven 2</span>
+                <span className="text-[10px] font-normal text-slate-500">(Matrices)</span>
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {activeCategory === 'behavior_emotion' && (
+      {(activeCategory === 'behavior_emotion' || activeCategory === 'child_adolescent_emotional') && (
         <div className="bg-slate-100/90 rounded-xl p-1.5 border border-slate-200/80 flex items-center gap-2">
           <span className="text-[11px] font-bold text-slate-500 uppercase px-2">
             Instrumento:
           </span>
-          <div className="flex items-center gap-1 flex-1">
+          <div className="flex items-center gap-1 flex-1 flex-wrap">
             <button
               type="button"
               onClick={() => handleInstrumentClick('sdq')}
@@ -334,22 +424,68 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               )}
             </button>
+
+            {activeBatteryIds.includes('sena') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('sena')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'sena'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>SENA</span>
+              </button>
+            )}
+
+            {activeBatteryIds.includes('cbcl') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('cbcl')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'cbcl'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>CBCL</span>
+              </button>
+            )}
+
+            {activeBatteryIds.includes('byi_2') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('byi_2')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'byi_2'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>BYI-2</span>
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {activeCategory === 'neurocognitive' && (
+      {(activeCategory === 'neurocognitive' || activeCategory === 'neuropsychology_attention') && (
         <div className="bg-slate-100/90 rounded-xl p-1.5 border border-slate-200/80 flex items-center gap-2">
           <span className="text-[11px] font-bold text-slate-500 uppercase px-2">
-            Instrumento:
+            Neuropsicología:
           </span>
-          <div className="flex items-center gap-1 flex-1">
+          <div className="flex items-center gap-1 flex-1 flex-wrap">
             <button
               type="button"
               onClick={() => handleInstrumentClick('moca')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs border border-slate-200"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeInstrument === 'moca'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <span>MoCA (Evaluación Cognitiva Montreal)</span>
+              <span>MoCA (Montreal)</span>
               {isMocaAlertActive ? (
                 <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-amber-500 text-white">
                   &lt;26
@@ -358,6 +494,102 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               ) : null}
             </button>
+
+            {activeBatteryIds.includes('d2_r') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('d2_r')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'd2_r'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>D2-R (Atención)</span>
+              </button>
+            )}
+
+            {activeBatteryIds.includes('neuropsi_breve') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('neuropsi_breve')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'neuropsi_breve'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>NEUROPSI Breve</span>
+              </button>
+            )}
+
+            {activeBatteryIds.includes('mmse') && (
+              <button
+                type="button"
+                onClick={() => handleInstrumentClick('mmse')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeInstrument === 'mmse'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>MMSE</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeCategory === 'personality_psychopathology' && (
+        <div className="bg-slate-100/90 rounded-xl p-1.5 border border-slate-200/80 flex items-center gap-2">
+          <span className="text-[11px] font-bold text-slate-500 uppercase px-2">
+            Personalidad:
+          </span>
+          <div className="flex items-center gap-1 flex-1 flex-wrap">
+            {['mmpi_3', 'pai', 'mcmi_iv'].map((pId) => {
+              const def = TestRegistry.get(pId);
+              return (
+                <button
+                  key={pId}
+                  type="button"
+                  onClick={() => handleInstrumentClick(pId)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeInstrument === pId
+                      ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{def?.metadata.name || pId.toUpperCase()}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {activeCategory === 'adaptive_behavior' && (
+        <div className="bg-slate-100/90 rounded-xl p-1.5 border border-slate-200/80 flex items-center gap-2">
+          <span className="text-[11px] font-bold text-slate-500 uppercase px-2">
+            Conducta Adaptativa:
+          </span>
+          <div className="flex items-center gap-1 flex-1 flex-wrap">
+            {['abas_3', 'vineland_3'].map((aId) => {
+              const def = TestRegistry.get(aId);
+              return (
+                <button
+                  key={aId}
+                  type="button"
+                  onClick={() => handleInstrumentClick(aId)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeInstrument === aId
+                      ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{def?.metadata.name || aId.toUpperCase()}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

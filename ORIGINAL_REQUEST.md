@@ -65,3 +65,47 @@ Integrar en la interfaz de Psicocalc un selector jerárquico o pestañas organiz
 ### Integración de Interfaz y Reporte Clínico
 - [ ] La barra de navegación permite alternar de forma inmediata entre cualquiera de los módulos e instrumentos sin pérdida de datos en la sesión activa.
 - [ ] El generador de informes (`print.css` / PDF) incluye de forma organizada y elegante las nuevas pruebas completadas junto con las tablas demográficas y firmas periciales.
+
+## Follow-up — 2026-10-13T17:23:53Z
+
+Transformación de la plataforma Psicocalc en una Suite Psicométrica Universal para profesionales de la salud mental y neuropsicología, implementando una arquitectura de Catálogo Extensible (TestRegistry) y los motores de cálculo, baremos en puntuaciones T/percentiles y reportes para instrumentos clave en Personalidad (MMPI-3, PAI, MCMI-IV), Neuropsicología y Atención (D2-R, NEUROPSI Breve, MMSE), Conducta Adaptativa (ABAS-3, Vineland-3), Evaluación Infanto-Juvenil (SENA, CBCL, BYI-2) e Inteligencia No Verbal (Raven 2).
+
+Working directory: C:\Users\USUARIO\OneDrive\Escritorio\trabajos\programas\psicocalc
+Integrity mode: development
+
+## Requirements
+
+### R1. Arquitectura de Catálogo Universal y Registro Extensible (TestRegistry)
+Diseñar una arquitectura modular desacoplada mediante un Registro Central de Instrumentos que categorice la suite en 6 áreas clínicas (Inteligencia & Aptitudes, Neuropsicología & Atención, Personalidad & Psicopatología, Conducta Adaptativa, Infanto-Juvenil & Emocional, y Guías Proyectivas), permitiendo el descubrimiento, búsqueda por palabras clave, filtrado por rango de edad (infantil, adolescente, adulto) y la activación dinámica de cualquier test sin riesgo de colisión de estado.
+
+### R2. Motores de Cálculo Psicométrico Estandarizado (Puntuaciones T, Percentiles y Baremos)
+Implementar y verificar matemáticamente la lógica de puntuación para los instrumentos prioritarios:
+- Personalidad & Psicopatología: 
+  - MMPI-3 / PAI: Escalas de validez (inconsistencia, infrecuencia, impresión negativa/positiva), escalas clínicas con conversión a Puntuaciones T (media 50, DE 10) y alertas visuales de significación clínica (T ≥ 65 / T ≥ 70).
+  - MCMI-IV: Puntuaciones de Tasa Base (TB) para patrones de personalidad y síndromes clínicos con líneas de corte (TB 75 presencia, TB 85 prominencia).
+- Neuropsicología & Atención:
+  - D2-R: Cálculo de Velocidad de Procesamiento (TR), Concentración (TOT, CON, CP) y precisión (errores E1 y E2).
+  - NEUROPSI Breve & MMSE: Puntuaciones globales y de subdominios con ajustes por edad y nivel de escolaridad.
+- Conducta Adaptativa & Desarrollo:
+  - ABAS-3 / Vineland-3: Puntuaciones escalares por dominios (Conceptual, Social, Práctico) y Puntuación Compuesta General de Conducta Adaptativa.
+- Evaluación Infanto-Juvenil:
+  - SENA / CBCL / BYI-2: Índices de problemas internalizantes, externalizantes y síntomas emocionales/conductuales con conversión a percentiles y puntuaciones T.
+- Inteligencia No Verbal:
+  - Raven 2: Conversión de aciertos a puntuación de habilidad no verbal y percentiles.
+
+### R3. Interfaz Multitest, Formularios Especializados y Reporte Pericial Consolidado
+Desarrollar una interfaz con explorador de catálogo dinámico, formularios de entrada de datos adaptados al formato de cada prueba (escalas Likert, respuestas numéricas directas, índices de acierto/error), visualizaciones reactivas de perfiles psicométricos (gráficos de barras y perfiles de Puntuaciones T con líneas de corte clínico) y unificación en el informe pericial A4 imprimible en PDF con formato confidencial y anonimización en 1 clic.
+
+## Acceptance Criteria
+
+### Precisión Psicométrica y Validación Matemática
+- [ ] La suite de pruebas automatizadas valida al 100% las conversiones a Puntuaciones T, Tasa Base, Puntuaciones Escalares, percentiles y alertas de corte clínico para cada uno de los instrumentos implementados frente a casos de referencia.
+- [ ] El sistema detecta y alerta ante protocolos inválidos en pruebas de personalidad (índices de inconsistencia o respuestas omitidas fuera de tolerancia).
+
+### Arquitectura y Catálogo Extensible
+- [ ] El catálogo permite buscar por texto y filtrar por categoría o rango de edad de manera reactiva y sin recarga.
+- [ ] La adición o activación de cualquier batería del catálogo mantiene intacto el estado de las demás pruebas administradas al evaluado.
+
+### Calidad de Visualización y Reporte Pericial
+- [ ] Los perfiles psicométricos de Puntuaciones T renderizan las líneas de referencia clínicas (T=65 / T=70) en gráficos vectoriales SVG limpios.
+- [ ] La exportación a PDF genera un informe clínico formal consolidado que incluye automáticamente solo las pruebas aplicadas, sin tablas vacías ni desbordamientos tipográficos.

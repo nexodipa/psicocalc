@@ -24,6 +24,7 @@ import {
   HTP_BENCHMARK_PROFILES,
 } from '../../core/types/htp';
 import { generateHtpFullReport } from '../../core/engine/htpNarrativeEngine';
+import { TestRegistry } from '../../core/registry/TestRegistry';
 import {
   ClinicalCategory,
   ClinicalInstrument,
@@ -36,6 +37,7 @@ import {
   Gad7SessionState,
   MocaSessionState,
   AdministeredInstruments,
+  CatalogFilterState,
 } from './ClinicalSessionTypes';
 import { anonymizeName } from '../hooks/usePsychometrics';
 
@@ -109,6 +111,16 @@ const INITIAL_MOCA_DOMAINS: MocaDomainScores = {
   orientation: 0,
 };
 
+const DEFAULT_ACTIVE_BATTERY_IDS = [
+  'wisc_v',
+  'wais_iv',
+  'sdq',
+  'phq_9',
+  'gad_7',
+  'moca',
+  'htp',
+];
+
 const ClinicalSessionContext = createContext<ClinicalSessionContextValue | undefined>(undefined);
 
 export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -120,7 +132,43 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
   const [demographics, setDemographicsState] = useState<ExtendedPatientDemographics>(INITIAL_DEMOGRAPHICS);
   const [originalName, setOriginalName] = useState<string>(INITIAL_DEMOGRAPHICS.nameOrId);
 
-  // 3. Independent Wechsler States
+  // 3. Layer 2: Sandboxed Battery Slices Map (State Isolation)
+  const [testData, setTestData] = useState<Record<string, any>>(() => ({
+    wisc_v: {
+      subtests: { ...INITIAL_WISC_SUBTESTS },
+      rawInputs: { ...INITIAL_WISC_RAW },
+      invalidSubtests: {},
+    },
+    wais_iv: {
+      subtests: {},
+      rawInputs: {},
+      invalidSubtests: {},
+    },
+    sdq: {
+      informant: 'parent',
+      responses: {},
+    },
+    phq_9: {
+      responses: {},
+    },
+    gad_7: {
+      responses: {},
+    },
+    moca: {
+      domains: { ...INITIAL_MOCA_DOMAINS },
+      educationYears: INITIAL_DEMOGRAPHICS.educationYears ?? 12,
+    },
+    htp: { ...INITIAL_HTP_RECORD },
+  }));
+
+  const [activeBatteryIds, setActiveBatteryIds] = useState<string[]>(DEFAULT_ACTIVE_BATTERY_IDS);
+  const [catalogFilters, setCatalogFiltersState] = useState<CatalogFilterState>({
+    search: '',
+    domain: 'all',
+    ageBand: 'all',
+  });
+
+  // 4. Independent Wechsler States (Legacy lenses)
   const [currentBattery, setCurrentBatteryState] = useState<BatteryType>('WISC-V');
   const [wiscState, setWiscState] = useState<WechslerSessionState>({
     subtests: { ...INITIAL_WISC_SUBTESTS },
@@ -133,32 +181,84 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     invalidSubtests: {},
   });
 
-  // 4. SDQ State
+  // 5. Clinical questionnaire states (Legacy lenses)
   const [sdqState, setSdqState] = useState<SdqSessionState>({
     informant: 'parent',
     responses: {},
   });
-
-  // 5. PHQ-9 State
   const [phq9State, setPhq9State] = useState<Phq9SessionState>({
     responses: {},
   });
-
-  // 6. GAD-7 State
   const [gad7State, setGad7State] = useState<Gad7SessionState>({
     responses: {},
   });
-
-  // 7. MoCA State
   const [mocaState, setMocaState] = useState<MocaSessionState>({
     domains: { ...INITIAL_MOCA_DOMAINS },
     educationYears: INITIAL_DEMOGRAPHICS.educationYears ?? 12,
   });
-
-  // 8. HTP State
   const [htpRecord, setHtpRecordState] = useState<HtpAssessmentRecord>({ ...INITIAL_HTP_RECORD });
 
+  // --------------------------------------------------------------------------
+  // Layer 2 Battery Partition Operations
+  // --------------------------------------------------------------------------
+  const activateBattery = useCallback((id: string) => {
+    setActiveBatteryIds((prev) => {
+      if (prev.includes(id)) return prev;
+      return [...prev, id];
+    });
+    setTestData((prev) => {
+      if (prev[id] !== undefined) return prev;
+      const def = TestRegistry.get(id);
+      const initial = def ? def.createInitialState() : {};
+      return { ...prev, [id]: initial };
+    });
+  }, []);
+
+  const deactivateBattery = useCallback((id: string) => {
+    setActiveBatteryIds((prev) => prev.filter((bId) => bId !== id));
+    // Notice: testData is preserved in memory to prevent accidental loss
+  }, []);
+
+  const setBatteryData = useCallback(<T = any>(batteryId: string, updater: T | ((prev: T) => T)) => {
+    setTestData((prev) => {
+      const prevData = prev[batteryId];
+      const nextData = typeof updater === 'function' ? (updater as any)(prevData) : updater;
+
+      // Sync legacy states if updating one of the 7 legacy batteries
+      if (batteryId === 'wisc_v') {
+        setWiscState(nextData);
+      } else if (batteryId === 'wais_iv') {
+        setWaisState(nextData);
+      } else if (batteryId === 'sdq') {
+        setSdqState(nextData);
+      } else if (batteryId === 'phq_9') {
+        setPhq9State(nextData);
+      } else if (batteryId === 'gad_7') {
+        setGad7State(nextData);
+      } else if (batteryId === 'moca') {
+        setMocaState(nextData);
+      } else if (batteryId === 'htp') {
+        setHtpRecordState(nextData);
+      }
+
+      return {
+        ...prev,
+        [batteryId]: nextData,
+      };
+    });
+  }, []);
+
+  const getBatteryData = useCallback(<T = any>(batteryId: string): T | undefined => {
+    return testData[batteryId];
+  }, [testData]);
+
+  const setCatalogFilters = useCallback((filters: Partial<CatalogFilterState>) => {
+    setCatalogFiltersState((prev) => ({ ...prev, ...filters }));
+  }, []);
+
+  // --------------------------------------------------------------------------
   // Demographics Handlers
+  // --------------------------------------------------------------------------
   const setDemographics = useCallback((updater: Partial<ExtendedPatientDemographics>) => {
     setDemographicsState((prev) => {
       const next = { ...prev, ...updater };
@@ -167,6 +267,10 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
       }
       if (updater.educationYears !== undefined) {
         setMocaState((mPrev) => ({ ...mPrev, educationYears: updater.educationYears! }));
+        setTestData((tPrev) => ({
+          ...tPrev,
+          moca: { ...tPrev.moca, educationYears: updater.educationYears! },
+        }));
       }
       return next;
     });
@@ -210,11 +314,15 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     setActiveInstrument(battery === 'WISC-V' ? 'wisc_v' : 'wais_iv');
   }, []);
 
-  // Wechsler Active Accessors
+  // --------------------------------------------------------------------------
+  // Wechsler Active Accessors & Sync
+  // --------------------------------------------------------------------------
   const activeWechslerState = currentBattery === 'WISC-V' ? wiscState : waisState;
+
   const setSubtestScore = useCallback(
     (id: SubtestId, score: number | null, rawText?: string) => {
       const isWisc = currentBattery === 'WISC-V';
+      const batteryKey = isWisc ? 'wisc_v' : 'wais_iv';
       const updater = isWisc ? setWiscState : setWaisState;
 
       updater((prev) => {
@@ -228,27 +336,27 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
         if (score === null) {
           delete nextSubtests[id];
           delete nextInvalid[id];
-          return {
-            subtests: nextSubtests,
-            rawInputs: nextRaw,
-            invalidSubtests: nextInvalid,
-          };
-        }
-
-        const validation = validateScaledScore(score);
-        if (!validation.isValid) {
-          nextInvalid[id] = validation.errorMessage || 'Puntuación fuera de rango (1-19)';
-          delete nextSubtests[id];
         } else {
-          delete nextInvalid[id];
-          nextSubtests[id] = score;
+          const validation = validateScaledScore(score);
+          if (!validation.isValid) {
+            nextInvalid[id] = validation.errorMessage || 'Puntuación fuera de rango (1-19)';
+            delete nextSubtests[id];
+          } else {
+            delete nextInvalid[id];
+            nextSubtests[id] = score;
+          }
         }
 
-        return {
+        const nextState = {
           subtests: nextSubtests,
           rawInputs: nextRaw,
           invalidSubtests: nextInvalid,
         };
+
+        // Sync into testData partition
+        setTestData((tPrev) => ({ ...tPrev, [batteryKey]: nextState }));
+
+        return nextState;
       });
     },
     [currentBattery]
@@ -256,28 +364,34 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
 
   const clearAllScores = useCallback(() => {
     const isWisc = currentBattery === 'WISC-V';
+    const batteryKey = isWisc ? 'wisc_v' : 'wais_iv';
     const updater = isWisc ? setWiscState : setWaisState;
-    updater({
+    const cleared = {
       subtests: {},
       rawInputs: {},
       invalidSubtests: {},
-    });
+    };
+    updater(cleared);
+    setTestData((tPrev) => ({ ...tPrev, [batteryKey]: cleared }));
   }, [currentBattery]);
 
   const loadSampleProfile = useCallback(
     (type: 'average' | 'gifted' | 'adhd') => {
       const isWisc = currentBattery === 'WISC-V';
+      const batteryKey = isWisc ? 'wisc_v' : 'wais_iv';
       const sample = isWisc ? WISC_V_SAMPLES[type] : WAIS_IV_SAMPLES[type];
       const raw: Record<string, string> = {};
       Object.entries(sample).forEach(([k, v]) => {
         raw[k] = String(v);
       });
       const updater = isWisc ? setWiscState : setWaisState;
-      updater({
+      const loaded = {
         subtests: { ...sample },
         rawInputs: raw,
         invalidSubtests: {},
-      });
+      };
+      updater(loaded);
+      setTestData((tPrev) => ({ ...tPrev, [batteryKey]: loaded }));
     },
     [currentBattery]
   );
@@ -298,51 +412,66 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     ).length;
   }, [activeWechslerState.subtests]);
 
+  // --------------------------------------------------------------------------
   // SDQ Handlers & Calculations
+  // --------------------------------------------------------------------------
   const setSdqResponse = useCallback((itemNumber: number, value: 0 | 1 | 2) => {
-    setSdqState((prev) => ({
-      ...prev,
-      responses: {
-        ...prev.responses,
-        [itemNumber]: value,
-      },
-    }));
+    setSdqState((prev) => {
+      const next = {
+        ...prev,
+        responses: {
+          ...prev.responses,
+          [itemNumber]: value,
+        },
+      };
+      setTestData((tPrev) => ({ ...tPrev, sdq: next }));
+      return next;
+    });
   }, []);
 
   const setSdqInformant = useCallback((informant: SdqInformantType) => {
-    setSdqState((prev) => ({ ...prev, informant }));
+    setSdqState((prev) => {
+      const next = { ...prev, informant };
+      setTestData((tPrev) => ({ ...tPrev, sdq: next }));
+      return next;
+    });
   }, []);
 
   const clearSdq = useCallback(() => {
-    setSdqState((prev) => ({ ...prev, responses: {} }));
+    const next = { informant: 'parent' as SdqInformantType, responses: {} };
+    setSdqState(next);
+    setTestData((tPrev) => ({ ...tPrev, sdq: next }));
   }, []);
 
   const loadSdqSample = useCallback((preset: 'normal' | 'clinical' = 'normal') => {
+    let sample: Record<number, number>;
     if (preset === 'normal') {
-      const sample: Record<number, number> = {
+      sample = {
         1: 1, 2: 0, 3: 0, 4: 0, 5: 0,
         6: 0, 7: 2, 8: 0, 9: 1, 10: 0,
         11: 2, 12: 0, 13: 0, 14: 2, 15: 0,
         16: 0, 17: 1, 18: 0, 19: 0, 20: 1,
         21: 2, 22: 0, 23: 0, 24: 0, 25: 2,
       };
-      setSdqState((prev) => ({ ...prev, responses: sample }));
     } else {
-      // Clinical profile (elevated difficulties)
-      const sample: Record<number, number> = {
+      sample = {
         1: 2, 2: 2, 3: 2, 4: 2, 5: 1,
         6: 1, 7: 0, 8: 2, 9: 2, 10: 2,
         11: 0, 12: 2, 13: 1, 14: 0, 15: 2,
         16: 2, 17: 1, 18: 2, 19: 2, 20: 0,
         21: 0, 22: 2, 23: 1, 24: 2, 25: 0,
       };
-      setSdqState((prev) => ({ ...prev, responses: sample }));
     }
+    setSdqState((prev) => {
+      const next = { ...prev, responses: sample };
+      setTestData((tPrev) => ({ ...tPrev, sdq: next }));
+      return next;
+    });
   }, []);
 
   const sdqCalculation = useMemo(() => {
     const answeredCount = Object.keys(sdqState.responses).length;
-    if (answeredCount < 15) return null; // Need sufficient items across scales
+    if (answeredCount < 15) return null;
     try {
       return calculateSdq({
         informant: sdqState.informant,
@@ -357,36 +486,40 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     return Object.keys(sdqState.responses).length === 25;
   }, [sdqState.responses]);
 
+  // --------------------------------------------------------------------------
   // PHQ-9 Handlers & Calculations
+  // --------------------------------------------------------------------------
   const setPhq9Response = useCallback((itemNumber: number, value: 0 | 1 | 2 | 3) => {
-    setPhq9State((prev) => ({
-      ...prev,
-      responses: {
-        ...prev.responses,
-        [itemNumber]: value,
-      },
-    }));
+    setPhq9State((prev) => {
+      const next = {
+        ...prev,
+        responses: {
+          ...prev.responses,
+          [itemNumber]: value,
+        },
+      };
+      setTestData((tPrev) => ({ ...tPrev, phq_9: next }));
+      return next;
+    });
   }, []);
 
   const clearPhq9 = useCallback(() => {
-    setPhq9State({ responses: {} });
+    const next = { responses: {} };
+    setPhq9State(next);
+    setTestData((tPrev) => ({ ...tPrev, phq_9: next }));
   }, []);
 
   const loadPhq9Sample = useCallback((preset: 'minimal' | 'moderate' | 'critical' = 'minimal') => {
+    let next: Phq9SessionState;
     if (preset === 'minimal') {
-      setPhq9State({
-        responses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 },
-      });
+      next = { responses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 } };
     } else if (preset === 'moderate') {
-      setPhq9State({
-        responses: { 1: 2, 2: 2, 3: 1, 4: 2, 5: 1, 6: 1, 7: 1, 8: 1, 9: 0 },
-      });
+      next = { responses: { 1: 2, 2: 2, 3: 1, 4: 2, 5: 1, 6: 1, 7: 1, 8: 1, 9: 0 } };
     } else {
-      // Critical suicide risk alert (Item 9 = 2)
-      setPhq9State({
-        responses: { 1: 3, 2: 3, 3: 2, 4: 2, 5: 2, 6: 2, 7: 2, 8: 1, 9: 2 },
-      });
+      next = { responses: { 1: 3, 2: 3, 3: 2, 4: 2, 5: 2, 6: 2, 7: 2, 8: 1, 9: 2 } };
     }
+    setPhq9State(next);
+    setTestData((tPrev) => ({ ...tPrev, phq_9: next }));
   }, []);
 
   const phq9Calculation = useMemo(() => {
@@ -407,35 +540,40 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     return val !== undefined && val >= 1;
   }, [phq9State.responses]);
 
+  // --------------------------------------------------------------------------
   // GAD-7 Handlers & Calculations
+  // --------------------------------------------------------------------------
   const setGad7Response = useCallback((itemNumber: number, value: 0 | 1 | 2 | 3) => {
-    setGad7State((prev) => ({
-      ...prev,
-      responses: {
-        ...prev.responses,
-        [itemNumber]: value,
-      },
-    }));
+    setGad7State((prev) => {
+      const next = {
+        ...prev,
+        responses: {
+          ...prev.responses,
+          [itemNumber]: value,
+        },
+      };
+      setTestData((tPrev) => ({ ...tPrev, gad_7: next }));
+      return next;
+    });
   }, []);
 
   const clearGad7 = useCallback(() => {
-    setGad7State({ responses: {} });
+    const next = { responses: {} };
+    setGad7State(next);
+    setTestData((tPrev) => ({ ...tPrev, gad_7: next }));
   }, []);
 
   const loadGad7Sample = useCallback((preset: 'minimal' | 'moderate' | 'severe' = 'minimal') => {
+    let next: Gad7SessionState;
     if (preset === 'minimal') {
-      setGad7State({
-        responses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 },
-      });
+      next = { responses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 } };
     } else if (preset === 'moderate') {
-      setGad7State({
-        responses: { 1: 2, 2: 2, 3: 1, 4: 1, 5: 2, 6: 1, 7: 2 },
-      });
+      next = { responses: { 1: 2, 2: 2, 3: 1, 4: 1, 5: 2, 6: 1, 7: 2 } };
     } else {
-      setGad7State({
-        responses: { 1: 3, 2: 3, 3: 2, 4: 3, 5: 2, 6: 2, 7: 3 },
-      });
+      next = { responses: { 1: 3, 2: 3, 3: 2, 4: 3, 5: 2, 6: 2, 7: 3 } };
     }
+    setGad7State(next);
+    setTestData((tPrev) => ({ ...tPrev, gad_7: next }));
   }, []);
 
   const gad7Calculation = useMemo(() => {
@@ -451,57 +589,71 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     return Object.keys(gad7State.responses).length === 7;
   }, [gad7State.responses]);
 
+  // --------------------------------------------------------------------------
   // MoCA Handlers & Calculations
+  // --------------------------------------------------------------------------
   const setMocaDomainScore = useCallback((domain: keyof MocaDomainScores, score: number) => {
-    setMocaState((prev) => ({
-      ...prev,
-      domains: {
-        ...prev.domains,
-        [domain]: score,
-      },
-    }));
+    setMocaState((prev) => {
+      const next = {
+        ...prev,
+        domains: {
+          ...prev.domains,
+          [domain]: score,
+        },
+      };
+      setTestData((tPrev) => ({ ...tPrev, moca: next }));
+      return next;
+    });
   }, []);
 
   const setMocaEducationYears = useCallback((years: number) => {
-    setMocaState((prev) => ({ ...prev, educationYears: years }));
+    setMocaState((prev) => {
+      const next = { ...prev, educationYears: years };
+      setTestData((tPrev) => ({ ...tPrev, moca: next }));
+      return next;
+    });
   }, []);
 
   const clearMoca = useCallback(() => {
-    setMocaState((prev) => ({
-      ...prev,
+    const next = {
       domains: { ...INITIAL_MOCA_DOMAINS },
-    }));
-  }, []);
+      educationYears: demographics.educationYears ?? 12,
+    };
+    setMocaState(next);
+    setTestData((tPrev) => ({ ...tPrev, moca: next }));
+  }, [demographics.educationYears]);
 
   const loadMocaSample = useCallback((preset: 'normal' | 'mci' = 'normal') => {
+    let nextDomains: MocaDomainScores;
     if (preset === 'normal') {
-      setMocaState((prev) => ({
-        ...prev,
-        domains: {
-          visuospatialExecutive: 5,
-          naming: 3,
-          attention: 6,
-          language: 3,
-          abstraction: 2,
-          delayedRecall: 4,
-          orientation: 6,
-        },
-      }));
+      nextDomains = {
+        visuospatialExecutive: 5,
+        naming: 3,
+        attention: 6,
+        language: 3,
+        abstraction: 2,
+        delayedRecall: 4,
+        orientation: 6,
+      };
     } else {
-      // Mild Cognitive Impairment (< 26)
-      setMocaState((prev) => ({
-        ...prev,
-        domains: {
-          visuospatialExecutive: 3,
-          naming: 2,
-          attention: 4,
-          language: 2,
-          abstraction: 1,
-          delayedRecall: 1,
-          orientation: 5,
-        },
-      }));
+      nextDomains = {
+        visuospatialExecutive: 3,
+        naming: 2,
+        attention: 4,
+        language: 2,
+        abstraction: 1,
+        delayedRecall: 1,
+        orientation: 5,
+      };
     }
+    setMocaState((prev) => {
+      const next = {
+        ...prev,
+        domains: nextDomains,
+      };
+      setTestData((tPrev) => ({ ...tPrev, moca: next }));
+      return next;
+    });
   }, []);
 
   const mocaCalculation = useMemo(() => {
@@ -524,30 +676,35 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     return mocaCalculation ? mocaCalculation.meetsClinicalCutoff : false;
   }, [mocaCalculation]);
 
+  // --------------------------------------------------------------------------
   // HTP Handlers & Calculations
+  // --------------------------------------------------------------------------
   const setHtpRecord = useCallback(
     (updater: HtpAssessmentRecord | ((prev: HtpAssessmentRecord) => HtpAssessmentRecord)) => {
       setHtpRecordState((prev) => {
-        if (typeof updater === 'function') {
-          return updater(prev);
-        }
-        return updater;
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        setTestData((tPrev) => ({ ...tPrev, htp: next }));
+        return next;
       });
     },
     []
   );
 
   const clearHtp = useCallback(() => {
-    setHtpRecordState({ ...INITIAL_HTP_RECORD });
+    const next = { ...INITIAL_HTP_RECORD };
+    setHtpRecordState(next);
+    setTestData((tPrev) => ({ ...tPrev, htp: next }));
   }, []);
 
   const loadHtpPreset = useCallback((preset: HtpBenchmarkPreset) => {
     const selected = HTP_BENCHMARK_PROFILES[preset];
     if (selected) {
-      setHtpRecordState({
+      const next = {
         ...JSON.parse(JSON.stringify(selected)),
         id: 'htp-preset-' + preset,
-      });
+      };
+      setHtpRecordState(next);
+      setTestData((tPrev) => ({ ...tPrev, htp: next }));
     }
   }, []);
 
@@ -565,11 +722,13 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     );
   }, [htpRecord]);
 
+  // --------------------------------------------------------------------------
   // Administered Instruments Tracking
+  // --------------------------------------------------------------------------
   const administered: AdministeredInstruments = useMemo(() => {
     const wiscAdministered = Object.keys(wiscState.subtests).length > 0;
     const waisAdministered = Object.keys(waisState.subtests).length > 0;
-    return {
+    const adminMap: AdministeredInstruments = {
       wiscV: wiscAdministered,
       waisIV: waisAdministered,
       sdq: isSdqCompleted || Object.keys(sdqState.responses).length >= 15,
@@ -578,6 +737,18 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
       moca: isMocaCompleted,
       htp: isHtpCompleted,
     };
+
+    // Also populate any dynamically registered instruments in testData
+    Object.entries(testData).forEach(([bId, bData]) => {
+      if (bData) {
+        const def = TestRegistry.get(bId);
+        if (def) {
+          adminMap[bId] = def.isCompleted(bData);
+        }
+      }
+    });
+
+    return adminMap;
   }, [
     wiscState.subtests,
     waisState.subtests,
@@ -587,9 +758,34 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     isGad7Completed,
     isMocaCompleted,
     isHtpCompleted,
+    testData,
   ]);
 
+  const administeredBatteries: string[] = useMemo(() => {
+    const list: string[] = [];
+    if (administered.wiscV) list.push('wisc_v');
+    if (administered.waisIV) list.push('wais_iv');
+    if (administered.sdq) list.push('sdq');
+    if (administered.phq9) list.push('phq_9');
+    if (administered.gad7) list.push('gad_7');
+    if (administered.moca) list.push('moca');
+    if (administered.htp) list.push('htp');
+
+    Object.keys(testData).forEach((bId) => {
+      if (!list.includes(bId)) {
+        const def = TestRegistry.get(bId);
+        if (def && def.isCompleted(testData[bId])) {
+          list.push(bId);
+        }
+      }
+    });
+
+    return list;
+  }, [administered, testData]);
+
+  // --------------------------------------------------------------------------
   // Global Session Reset & Demo Loader
+  // --------------------------------------------------------------------------
   const resetFullSession = useCallback(() => {
     setDemographicsState({ ...INITIAL_DEMOGRAPHICS });
     setOriginalName(INITIAL_DEMOGRAPHICS.nameOrId);
@@ -600,10 +796,19 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     setGad7State({ responses: {} });
     setMocaState({ domains: { ...INITIAL_MOCA_DOMAINS }, educationYears: 12 });
     setHtpRecordState({ ...INITIAL_HTP_RECORD });
+    setTestData({
+      wisc_v: { subtests: {}, rawInputs: {}, invalidSubtests: {} },
+      wais_iv: { subtests: {}, rawInputs: {}, invalidSubtests: {} },
+      sdq: { informant: 'parent', responses: {} },
+      phq_9: { responses: {} },
+      gad_7: { responses: {} },
+      moca: { domains: { ...INITIAL_MOCA_DOMAINS }, educationYears: 12 },
+      htp: { ...INITIAL_HTP_RECORD },
+    });
+    setActiveBatteryIds(DEFAULT_ACTIVE_BATTERY_IDS);
   }, []);
 
   const loadDemoSession = useCallback(() => {
-    // Populate rich multimodal clinical session for demo
     setDemographicsState({
       nameOrId: 'Lucas Fernández Gómez',
       birthDate: '2016-04-08',
@@ -633,6 +838,9 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
       activeInstrument,
       demographics,
       originalName,
+      testData,
+      activeBatteryIds,
+      catalogFilters,
       wiscState,
       waisState,
       currentBattery,
@@ -643,6 +851,19 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
       htpRecord,
     },
     administered,
+    administeredBatteries,
+
+    // Layer 2 Partitioned State Management
+    testData,
+    activeBatteryIds,
+    activateBattery,
+    deactivateBattery,
+    setBatteryData,
+    getBatteryData,
+
+    // Catalog filters
+    catalogFilters,
+    setCatalogFilters,
 
     activeCategory,
     activeInstrument,

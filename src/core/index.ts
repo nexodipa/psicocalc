@@ -32,3 +32,27 @@ export * from './engine/clinicalCalculators';
 // Projective qualitative evaluation (HTP: Casa-Árbol-Persona)
 export * from './types/htp';
 export * from './engine/htpNarrativeEngine';
+
+// Centralized Universal Registry
+export * from './registry';
+
+// Universal Psychometric Suite (Phase 3)
+export * from './types/personality';
+export * from './tables/personalityNorms';
+export * from './engine/personalityCalculators';
+
+export * from './types/neuropsych';
+export * from './tables/neuropsychNorms';
+export * from './engine/neuropsychCalculators';
+
+export * from './types/adaptive';
+export * from './tables/adaptiveNorms';
+export * from './engine/adaptiveCalculators';
+
+export * from './types/child_adolescent';
+export * from './tables/childAdolescentNorms';
+export * from './engine/childAdolescentCalculators';
+
+export * from './types/nonverbal';
+export * from './tables/nonverbalNorms';
+export * from './engine/raven2Calculator';

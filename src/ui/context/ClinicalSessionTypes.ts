@@ -1,11 +1,9 @@
 /**
  * Type definitions for the unified clinical session state:
- * - WISC-V & WAIS-IV (Wechsler Intelligence)
- * - SDQ (Goodman Strengths and Difficulties)
- * - PHQ-9 (Patient Health Questionnaire - Depression)
- * - GAD-7 (Generalized Anxiety Disorder)
- * - MoCA (Montreal Cognitive Assessment)
- * - HTP (House-Tree-Person Projective Assessment)
+ * - Two-Layer Architecture:
+ *   - Layer 1: Shared Clinical Envelope (Patient Demographics, 1-Click Anonymization, Active Batteries, Catalog Filters)
+ *   - Layer 2: Sandboxed Battery Slices (`testData[batteryId]`) guaranteeing zero state collision
+ *   - Layer 3: Legacy Compatibility Lenses (preserving 100% backward compatibility with existing tests)
  */
 
 import {
@@ -30,13 +28,16 @@ import {
   HtpNarrativeReport,
   HtpBenchmarkPreset,
 } from '../../core/types/htp';
+import { ClinicalDomainId, TargetAgeGroup } from '../../core/registry/TestRegistryTypes';
 
 export type ClinicalCategory =
+  | 'catalog'
   | 'intelligence'
   | 'behavior_emotion'
   | 'neurocognitive'
   | 'projective'
-  | 'report';
+  | 'report'
+  | ClinicalDomainId;
 
 export type ClinicalInstrument =
   | 'wisc_v'
@@ -45,10 +46,11 @@ export type ClinicalInstrument =
   | 'phq_9'
   | 'gad_7'
   | 'moca'
-  | 'htp';
+  | 'htp'
+  | string;
 
 export interface ExtendedPatientDemographics extends PatientDemographics {
-  educationYears?: number; // Education years for MoCA (+1 if <= 12)
+  educationYears?: number; // Education years for MoCA / NEUROPSI / MMSE
   schoolGrade?: string;
   medicalRecordNumber?: string;
 }
@@ -85,6 +87,13 @@ export interface AdministeredInstruments {
   gad7: boolean;
   moca: boolean;
   htp: boolean;
+  [instrumentId: string]: boolean;
+}
+
+export interface CatalogFilterState {
+  search: string;
+  domain: ClinicalDomainId | 'all';
+  ageBand: TargetAgeGroup | 'all';
 }
 
 export interface ClinicalSessionState {
@@ -96,12 +105,15 @@ export interface ClinicalSessionState {
   demographics: ExtendedPatientDemographics;
   originalName: string;
 
-  // Wechsler batteries (independent states to avoid losing data)
+  // Layer 2: Sandboxed Battery Slices Map (Key Namespace Isolation)
+  testData: Record<string, any>;
+  activeBatteryIds: string[];
+  catalogFilters: CatalogFilterState;
+
+  // Layer 3: Legacy lenses for Wechsler batteries & Clinical questionnaires
   wiscState: WechslerSessionState;
   waisState: WechslerSessionState;
   currentBattery: BatteryType;
-
-  // Clinical questionnaire states
   sdqState: SdqSessionState;
   phq9State: Phq9SessionState;
   gad7State: Gad7SessionState;
@@ -113,6 +125,19 @@ export interface ClinicalSessionContextValue {
   // State
   state: ClinicalSessionState;
   administered: AdministeredInstruments;
+  administeredBatteries: string[];
+
+  // Layer 2 Partitioned State Management
+  testData: Record<string, any>;
+  activeBatteryIds: string[];
+  activateBattery: (id: string) => void;
+  deactivateBattery: (id: string) => void;
+  setBatteryData: <T = any>(batteryId: string, updater: T | ((prev: T) => T)) => void;
+  getBatteryData: <T = any>(batteryId: string) => T | undefined;
+
+  // Catalog Explorer Filters
+  catalogFilters: CatalogFilterState;
+  setCatalogFilters: (filters: Partial<CatalogFilterState>) => void;
 
   // Navigation
   activeCategory: ClinicalCategory;

@@ -1,14 +1,16 @@
 import React from 'react';
 import { BatteryType } from '../../../core';
 import { BatterySelector } from './BatterySelector';
-import { Printer, Calculator, FileText, Activity } from 'lucide-react';
+import { Printer, Calculator, FileText, Layers, ShieldCheck, ShieldAlert } from 'lucide-react';
 
 interface AppHeaderProps {
   currentBattery: BatteryType;
   onSelectBattery: (battery: BatteryType) => void;
-  activeTab: 'calculator' | 'report';
-  onSelectTab: (tab: 'calculator' | 'report') => void;
+  activeTab: 'calculator' | 'report' | 'catalog';
+  onSelectTab: (tab: 'calculator' | 'report' | 'catalog') => void;
   onPrint: () => void;
+  onToggleAnonymize?: () => void;
+  isAnonymized?: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -17,6 +19,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   activeTab,
   onSelectTab,
   onPrint,
+  onToggleAnonymize,
+  isAnonymized,
 }) => {
   return (
     <header className="app-nav no-print sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
@@ -61,14 +65,27 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </div>
 
           {/* View Toggles & Print Action */}
-          <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap sm:flex-nowrap">
             <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200/80">
+              <button
+                type="button"
+                onClick={() => onSelectTab('catalog')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  activeTab === 'catalog'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5 text-blue-600" />
+                <span>Catálogo Universal</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => onSelectTab('calculator')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                   activeTab === 'calculator'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -81,7 +98,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 onClick={() => onSelectTab('report')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                   activeTab === 'report'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -89,6 +106,33 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 <span>Informe Clínico</span>
               </button>
             </div>
+
+            {/* 1-Click Anonymize in Header */}
+            {onToggleAnonymize && (
+              <button
+                type="button"
+                onClick={onToggleAnonymize}
+                aria-label="Alternar anonimización de paciente"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                  isAnonymized
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                }`}
+                title="Anonimizar paciente en 1 clic (máscara de iniciales)"
+              >
+                {isAnonymized ? (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="hidden sm:inline">Anonimizado</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldAlert className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="hidden sm:inline">Anonimizar</span>
+                  </>
+                )}
+              </button>
+            )}
 
             {/* 1-Click Print / PDF Export */}
             <button
