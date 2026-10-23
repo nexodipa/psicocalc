@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   BatteryType,
   CompositeResult,
@@ -6,6 +6,7 @@ import {
   StrengthWeaknessResult,
   SubtestId,
   validateAgeAndBattery,
+  TestRegistry,
 } from '../../../core';
 import { useOptionalClinicalSession } from '../../context/ClinicalSessionContext';
 import { InstitutionalHeader } from './InstitutionalHeader';
@@ -17,7 +18,7 @@ import { SignatureBlock } from './SignatureBlock';
 import { ProfileScatterChart } from '../charts/ProfileScatterChart';
 import { GaussianBellCurve } from '../charts/GaussianBellCurve';
 import { SdqProfileBarChart } from '../clinical/SdqProfileBarChart';
-import { AlertOctagon, AlertTriangle, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export interface ClinicalReportViewProps {
   battery?: BatteryType;
@@ -30,6 +31,16 @@ export interface ClinicalReportViewProps {
   strengthsWeaknesses?: StrengthWeaknessResult[];
   isCompleteCit?: boolean;
 }
+
+const LEGACY_REPORT_IDS = new Set([
+  'wisc_v',
+  'wais_iv',
+  'sdq',
+  'phq_9',
+  'gad_7',
+  'moca',
+  'htp',
+]);
 
 export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => {
   const session = useOptionalClinicalSession();
@@ -81,6 +92,66 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
   const isWechslerAdministered =
     Object.keys(subtests).length > 0 || cit !== null || isCompleteCit;
 
+  // Dynamically compute any administered extended catalog instruments (from the 28 remaining batteries)
+  const completedExtendedBatteries = useMemo(() => {
+    const testData = session?.testData;
+    if (!testData) return [];
+
+    const list: {
+      id: string;
+      name: string;
+      fullName: string;
+      summaryText: string;
+      alertLabel?: string;
+    }[] = [];
+
+    for (const def of TestRegistry.getAll()) {
+      const id = def.metadata.id;
+      if (LEGACY_REPORT_IDS.has(id)) continue;
+
+      const raw = testData[id];
+      if (!raw || !def.isCompleted(raw)) continue;
+
+      try {
+        const res: any = def.calculate(raw, demographics);
+        const alertInfo = def.hasActiveAlert ? def.hasActiveAlert(res) : { active: false, label: '' };
+
+        let summaryText = '';
+        if (typeof res?.summary === 'string') {
+          summaryText = res.summary;
+        } else if (typeof res?.diagnosticSummary === 'string') {
+          summaryText = res.diagnosticSummary;
+        } else if (typeof res?.interpretation === 'string') {
+          summaryText = res.interpretation;
+        } else if (typeof res?.clinicalClassification === 'string') {
+          summaryText = `Clasificación: ${res.clinicalClassification}`;
+        } else if (res?.gac?.compositeScore) {
+          summaryText = `CAG/GAC = ${res.gac.compositeScore} (Pc ${res.gac.percentile}) — ${res.gac.qualitative}`;
+        } else if (res?.abc?.standardScore) {
+          summaryText = `ABC = ${res.abc.standardScore} (Pc ${res.abc.percentile}) — ${res.abc.descriptor}`;
+        } else if (res?.igd?.standardScore) {
+          summaryText = `IGD = ${res.igd.standardScore} (Pc ${res.igd.percentile}) — ${res.igd.qualitative}`;
+        } else if (res?.standardScore) {
+          summaryText = `CI No Verbal = ${res.standardScore} (Pc ${res.percentile}) — ${res.qualitative}`;
+        } else if (res?.indexScore) {
+          summaryText = `CI No Verbal = ${res.indexScore} (Pc ${res.percentile}) — ${res.qualitative}`;
+        }
+
+        list.push({
+          id,
+          name: def.metadata.name,
+          fullName: def.metadata.fullName,
+          summaryText,
+          alertLabel: alertInfo.active ? alertInfo.label : undefined,
+        });
+      } catch {
+        // Skip invalid calculation
+      }
+    }
+
+    return list;
+  }, [session?.testData, demographics]);
+
   return (
     <div
       className="max-w-4xl mx-auto my-6 bg-white border border-slate-200 shadow-xl rounded-2xl p-6 sm:p-10 page-container print:p-0 print:border-none print:shadow-none print:m-0 print:max-w-full space-y-6"
@@ -108,7 +179,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
       {/* =================================================================== */}
       {isWechslerAdministered && (
         <div className="report-instrument-section space-y-6" data-testid="report-wechsler-section">
-          {/* Composite indices table & charts */}
           <div className="avoid-break">
             <PrimaryIndicesTable
               battery={battery}
@@ -117,7 +187,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
               isCompleteCit={isCompleteCit}
             />
 
-            {/* Embedded Pure Vector SVG Charts */}
             <div className="avoid-break space-y-4 my-6">
               <ProfileScatterChart
                 battery={battery}
@@ -136,7 +205,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
 
           <div className="print-page-break my-6 border-t border-slate-200 print:border-none print:m-0" />
 
-          {/* Subtest summary & automated clinical narrative */}
           <div className="avoid-break">
             <SubtestSummaryTable
               battery={battery}
@@ -166,7 +234,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             V. Cribado Neurocognitivo Rápido (MoCA - Montreal Cognitive Assessment)
           </h2>
 
-          {/* MoCA Cutoff Alert Banner */}
           {mocaCalculation.meetsClinicalCutoff ? (
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-400 text-amber-950 text-xs flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -191,7 +258,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             </div>
           )}
 
-          {/* MoCA Domains Table */}
           <table className="clinical-table w-full text-xs border border-slate-300">
             <thead>
               <tr className="bg-slate-100 text-slate-800 font-bold">
@@ -263,7 +329,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             </span>
           </div>
 
-          {/* SDQ Subscales Table */}
           <table className="clinical-table w-full text-xs border border-slate-300">
             <thead>
               <tr className="bg-slate-100 text-slate-800 font-bold">
@@ -306,7 +371,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             </tbody>
           </table>
 
-          {/* Embedded SDQ Profile Bar Chart */}
           <div className="my-4 avoid-break">
             <SdqProfileBarChart sdqResult={sdqCalculation} />
           </div>
@@ -322,7 +386,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             VII. Sintomatología Afectiva: Depresión y Ansiedad (PHQ-9 &amp; GAD-7)
           </h2>
 
-          {/* Critical Suicide Risk Banner in Print / Report */}
           {isPhq9Item9AlertActive && (
             <div className="p-3 rounded-lg bg-red-100 border-2 border-red-600 text-red-950 text-xs space-y-1 print-critical-alert" data-testid="report-suicide-alert">
               <div className="flex items-center gap-2 font-black uppercase text-red-900">
@@ -335,7 +398,6 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             </div>
           )}
 
-          {/* Affective Instruments Scores Table */}
           <table className="clinical-table w-full text-xs border border-slate-300">
             <thead>
               <tr className="bg-slate-100 text-slate-800 font-bold">
@@ -400,6 +462,53 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
               <strong>Interpretación Ansiedad (GAD-7):</strong> {gad7Calculation.interpretation} {gad7Calculation.recommendation}
             </p>
           )}
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 5.5 Extended Batteries Consolidated Summary (when administered)     */}
+      {/* =================================================================== */}
+      {completedExtendedBatteries.length > 0 && (
+        <div
+          className="report-instrument-section avoid-break space-y-3 pt-4 border-t border-slate-200 print:border-slate-300"
+          data-testid="report-extended-suite-section"
+        >
+          <h2 className="report-section text-sm font-bold text-slate-800 uppercase tracking-wide border-b border-slate-300 pb-1">
+            Baterías Especializadas Administradas en Sesión ({completedExtendedBatteries.length})
+          </h2>
+
+          <table className="clinical-table w-full text-xs border border-slate-300">
+            <thead>
+              <tr className="bg-slate-100 text-slate-800 font-bold">
+                <th className="p-2 border border-slate-300 text-left w-28">Sigla</th>
+                <th className="p-2 border border-slate-300 text-left">Instrumento</th>
+                <th className="p-2 border border-slate-300 text-left">Síntesis Psicométrica</th>
+                <th className="p-2 border border-slate-300 text-center w-36">Estado Clínico</th>
+              </tr>
+            </thead>
+            <tbody>
+              {completedExtendedBatteries.map((item) => (
+                <tr key={item.id} className="border-b border-slate-200">
+                  <td className="p-2 border border-slate-200 font-black text-slate-900">
+                    {item.name}
+                  </td>
+                  <td className="p-2 border border-slate-200 font-medium text-slate-800">
+                    {item.fullName}
+                  </td>
+                  <td className="p-2 border border-slate-200 text-slate-700">
+                    {item.summaryText}
+                  </td>
+                  <td className="p-2 border border-slate-200 text-center font-bold">
+                    {item.alertLabel ? (
+                      <span className="text-red-700">{item.alertLabel}</span>
+                    ) : (
+                      <span className="text-emerald-700">Normal / Válido</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

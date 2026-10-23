@@ -755,7 +755,7 @@ describe('Empirical Challenger 1 — Milestone M1-Core Adversarial Stress Suite'
   describe('Dimension 13: Centralized TestRegistry Contract Invariants', () => {
     it('CH1-REG-1: all 19 registered instruments provide unique non-null initial states', () => {
       const all = TestRegistry.getAll();
-      expect(all.length).toBe(19);
+      expect(all.length).toBe(35);
 
       for (const inst of all) {
         const state1 = inst.createInitialState();

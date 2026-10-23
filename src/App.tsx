@@ -34,7 +34,6 @@ const AppContent: React.FC = () => {
     activeCategory,
     activeInstrument,
     setActiveCategory,
-    currentBattery,
     setBattery,
     htpRecord,
     setHtpRecord,
@@ -65,7 +64,6 @@ const AppContent: React.FC = () => {
     window.print();
   }, []);
 
-  // Header tab toggle: 'calculator' maps to active instrument views, 'report' maps to clinical report view, 'catalog' maps to catalog
   const headerActiveTab =
     activeCategory === 'report' ? 'report' : activeCategory === 'catalog' ? 'catalog' : 'calculator';
 
@@ -84,6 +82,8 @@ const AppContent: React.FC = () => {
     [activeCategory, setActiveCategory]
   );
 
+  const isNonWechslerAptitude = ['raven_2', 'toni_4', 'ipp_r'].includes(activeInstrument);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* 1. App Header with Battery Selector & Tab Switcher (hidden in print) */}
@@ -101,7 +101,7 @@ const AppContent: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <aside
           aria-label="Alcance de la demostración"
-          className="mb-6 border-l-4 border-amber-600 bg-amber-50 p-4 text-sm text-slate-900 print:hidden"
+          className="mb-6 border-l-4 border-amber-600 bg-amber-50 p-4 text-sm text-slate-900 print:hidden rounded-r-xl"
         >
           <strong>Demostración técnica, no validada para uso clínico ni pericial.</strong>
           <p>
@@ -124,13 +124,11 @@ const AppContent: React.FC = () => {
         )}
 
         {/* =================================================================== */}
-        {/* On-screen view: Intelligence & Cognition (WISC-V / WAIS-IV / Raven 2) */}
+        {/* On-screen view: Intelligence & Cognition (WISC-V / WAIS-IV)        */}
         {/* =================================================================== */}
-        {(activeCategory === 'intelligence' ||
-          (activeCategory === 'intelligence_aptitudes' && activeInstrument !== 'raven_2')) &&
-          activeInstrument !== 'raven_2' && (
+        {(activeCategory === 'intelligence' || activeCategory === 'intelligence_aptitudes') &&
+          !isNonWechslerAptitude && (
             <div className="space-y-6 block print:hidden" data-testid="intelligence-module">
-              {/* Validation Alert Banner */}
               <ValidationBanner
                 battery={battery}
                 invalidSubtests={invalidSubtests}
@@ -140,7 +138,6 @@ const AppContent: React.FC = () => {
                 administeredSubtestCount={administeredSubtestCount}
               />
 
-              {/* Demographics Card */}
               <DemographicsCard
                 battery={battery}
                 demographics={demographics}
@@ -150,7 +147,6 @@ const AppContent: React.FC = () => {
                 ageValidation={ageValidation}
               />
 
-              {/* Real-Time Composite Score Metric Cards */}
               <CompositeScoreCards
                 battery={battery}
                 cit={cit}
@@ -159,7 +155,6 @@ const AppContent: React.FC = () => {
                 hasInvalidScores={hasInvalidScores}
               />
 
-              {/* Fast Keyboard-First Subtests Input Grid */}
               <SubtestInputGrid
                 battery={battery}
                 subtests={subtests}
@@ -170,7 +165,6 @@ const AppContent: React.FC = () => {
                 onLoadSample={loadSampleProfile}
               />
 
-              {/* Pure React Vector SVG Charts Grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <ProfileScatterChart
                   battery={battery}
@@ -186,7 +180,6 @@ const AppContent: React.FC = () => {
                 />
               </div>
 
-              {/* Quick CTA to jump to Formal Clinical Report */}
               <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm no-print">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200">
@@ -224,16 +217,18 @@ const AppContent: React.FC = () => {
             </div>
           )}
 
-        {/* Raven 2 Nonverbal Intelligence View */}
+        {/* Nonverbal Intelligence & Vocational Views (Raven 2, TONI-4, IPP-R) */}
         {(activeCategory === 'intelligence_aptitudes' || activeCategory === 'intelligence') &&
-          activeInstrument === 'raven_2' && (
+          isNonWechslerAptitude && (
             <div className="space-y-6 block print:hidden" data-testid="raven-module">
-              <Raven2InputCard />
+              {activeInstrument === 'raven_2' && <Raven2InputCard instrumentId="raven_2" />}
+              {activeInstrument === 'toni_4' && <Raven2InputCard instrumentId="toni_4" />}
+              {activeInstrument === 'ipp_r' && <LikertMatrixInputCard batteryId="ipp_r" />}
             </div>
           )}
 
         {/* =================================================================== */}
-        {/* On-screen view: Behavior & Emotion (SDQ, PHQ-9, GAD-7, SENA, CBCL, BYI-2) */}
+        {/* On-screen view: Behavior & Emotion (SDQ, PHQ-9, GAD-7, SENA, CBCL, BYI-2, CECAD, IAC, ICCP) */}
         {/* =================================================================== */}
         {(activeCategory === 'behavior_emotion' ||
           activeCategory === 'child_adolescent_emotional') && (
@@ -244,6 +239,9 @@ const AppContent: React.FC = () => {
             {activeInstrument === 'sena' && <LikertMatrixInputCard batteryId="sena" />}
             {activeInstrument === 'cbcl' && <LikertMatrixInputCard batteryId="cbcl" />}
             {activeInstrument === 'byi_2' && <LikertMatrixInputCard batteryId="byi_2" />}
+            {activeInstrument === 'cecad' && <LikertMatrixInputCard batteryId="cecad" />}
+            {activeInstrument === 'iac' && <LikertMatrixInputCard batteryId="iac" />}
+            {activeInstrument === 'iccp' && <LikertMatrixInputCard batteryId="iccp" />}
           </div>
         )}
 
@@ -261,25 +259,53 @@ const AppContent: React.FC = () => {
             {activeInstrument === 'mmse' && (
               <DomainChecklistScreeningCard instrumentId="mmse" />
             )}
+            {activeInstrument === 'brief_a' && (
+              <LikertMatrixInputCard batteryId="brief_a" />
+            )}
+            {activeInstrument === 'cumanes' && (
+              <DomainChecklistScreeningCard instrumentId="cumanes" />
+            )}
+            {activeInstrument === 'neuro_kid' && (
+              <DomainChecklistScreeningCard instrumentId="neuro_kid" />
+            )}
+            {activeInstrument === 'lole' && (
+              <DomainChecklistScreeningCard instrumentId="lole" />
+            )}
           </div>
         )}
 
         {/* =================================================================== */}
-        {/* On-screen view: Personality & Psychopathology (MMPI-3, PAI, MCMI-IV) */}
+        {/* On-screen view: Personality & Psychopathology (9 Batteries)        */}
         {/* =================================================================== */}
         {activeCategory === 'personality_psychopathology' && (
           <div className="space-y-6 block print:hidden" data-testid="personality-module">
             {activeInstrument === 'mmpi_3' && <LikertMatrixInputCard batteryId="mmpi_3" />}
             {activeInstrument === 'pai' && <LikertMatrixInputCard batteryId="pai" />}
-            {activeInstrument === 'mcmi_iv' && <BaseRateMultiScaleCard />}
-            {!['mmpi_3', 'pai', 'mcmi_iv'].includes(activeInstrument) && (
+            {activeInstrument === 'mcmi_iv' && <BaseRateMultiScaleCard instrumentId="mcmi_iv" />}
+            {activeInstrument === 'maci_iv' && <BaseRateMultiScaleCard instrumentId="maci_iv" />}
+            {activeInstrument === 'mmpi_rf' && <LikertMatrixInputCard batteryId="mmpi_rf" />}
+            {activeInstrument === 'mmpi_a_rf' && <LikertMatrixInputCard batteryId="mmpi_a_rf" />}
+            {activeInstrument === 'bfq' && <LikertMatrixInputCard batteryId="bfq" />}
+            {activeInstrument === 'staxi_2' && <LikertMatrixInputCard batteryId="staxi_2" />}
+            {activeInstrument === 'lsb_50' && <LikertMatrixInputCard batteryId="lsb_50" />}
+            {![
+              'mmpi_3',
+              'pai',
+              'mcmi_iv',
+              'maci_iv',
+              'mmpi_rf',
+              'mmpi_a_rf',
+              'bfq',
+              'staxi_2',
+              'lsb_50',
+            ].includes(activeInstrument) && (
               <LikertMatrixInputCard batteryId="mmpi_3" />
             )}
           </div>
         )}
 
         {/* =================================================================== */}
-        {/* On-screen view: Adaptive Behavior & Development (ABAS-3, Vineland-3)*/}
+        {/* On-screen view: Adaptive Behavior & Development (ABAS-3, Vineland-3, DP-3) */}
         {/* =================================================================== */}
         {activeCategory === 'adaptive_behavior' && (
           <div className="space-y-6 block print:hidden" data-testid="adaptive-module">
@@ -287,7 +313,8 @@ const AppContent: React.FC = () => {
             {activeInstrument === 'vineland_3' && (
               <AdaptiveSkillDomainCard batteryId="vineland_3" />
             )}
-            {!['abas_3', 'vineland_3'].includes(activeInstrument) && (
+            {activeInstrument === 'dp_3' && <AdaptiveSkillDomainCard batteryId="dp_3" />}
+            {!['abas_3', 'vineland_3', 'dp_3'].includes(activeInstrument) && (
               <AdaptiveSkillDomainCard batteryId="abas_3" />
             )}
           </div>
@@ -296,7 +323,7 @@ const AppContent: React.FC = () => {
         {/* =================================================================== */}
         {/* On-screen view: Projective Assessment (HTP)                        */}
         {/* =================================================================== */}
-        {activeCategory === 'projective' && (
+        {(activeCategory === 'projective' || activeCategory === 'projective_guides') && (
           <div className="space-y-6 block print:hidden" data-testid="projective-module">
             <HtpModuleContainer
               key={htpRecord.id}
@@ -328,9 +355,9 @@ const AppContent: React.FC = () => {
       <footer className="app-footer no-print border-t border-slate-200 bg-white py-4 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">Psicocalc · Demostración técnica</span>
+            <span className="font-bold text-slate-700">Psicocalc · Suite Psicométrica Universal (35 Pruebas)</span>
             <span>—</span>
-            <span>Interfaz de puntuaciones y documentos de muestra</span>
+            <span>Interfaz de puntuaciones, psicogramas vectoriales y documentos de muestra</span>
           </div>
           <div>
             <span>Usa únicamente datos sintéticos. No es un sistema de historia clínica.</span>

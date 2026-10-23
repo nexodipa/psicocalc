@@ -43,7 +43,7 @@ describe('Milestone M2-UI — Universal Catalog Explorer & Specialized Multitest
         expect(screen.getByTestId(`catalog-card-${id}`)).toBeDefined();
       }
 
-      expect(screen.getByText(/19 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/35 de 35 disponibles/i)).toBeDefined();
     });
 
     it('filters instruments dynamically via keyword search bar without reload', () => {

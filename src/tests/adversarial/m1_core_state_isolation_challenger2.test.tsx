@@ -721,7 +721,7 @@ describe('Empirical Challenger 2 — Milestone M1-Core: TestRegistry & State Iso
   describe('Dimension 5: TestRegistry Adversarial Boundaries, Edge Cases & Dynamic Extension', () => {
     it('ensures createInitialState() generates new independent object instances without prototype pollution', () => {
       const allInstruments = TestRegistry.getAll();
-      expect(allInstruments.length).toBe(19);
+      expect(allInstruments.length).toBe(35);
 
       for (const inst of allInstruments) {
         const state1 = inst.createInitialState();
@@ -796,7 +796,7 @@ describe('Empirical Challenger 2 — Milestone M1-Core: TestRegistry & State Iso
       // 1. Register custom instrument
       TestRegistry.register(customInstrument);
       expect(TestRegistry.has('custom_neuro_test')).toBe(true);
-      expect(TestRegistry.getAll().length).toBe(20);
+      expect(TestRegistry.getAll().length).toBe(36);
 
       // Search finds it
       const searchRes = TestRegistry.search('experimental').map((i) => i.metadata.id);
@@ -828,7 +828,7 @@ describe('Empirical Challenger 2 — Milestone M1-Core: TestRegistry & State Iso
       // 3. Reset registry
       TestRegistry.reset();
       expect(TestRegistry.has('custom_neuro_test')).toBe(false);
-      expect(TestRegistry.getAll().length).toBe(19);
+      expect(TestRegistry.getAll().length).toBe(35);
     });
   });
 });

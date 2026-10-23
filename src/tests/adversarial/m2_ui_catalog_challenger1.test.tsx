@@ -503,7 +503,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       // Verify recovery to all 19 instruments
       expect(screen.getByTestId('catalog-card-wisc_v')).toBeDefined();
       expect(screen.getByTestId('catalog-card-mmpi_3')).toBeDefined();
-      expect(screen.getByText(/19 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/35 de 35 disponibles/i)).toBeDefined();
 
       // Test "X" button to clear search input directly
       fireEvent.change(searchInput, { target: { value: '<script>alert(1)</script>' } });
@@ -543,7 +543,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.queryByTestId('catalog-card-abas_3')).toBeNull();
       expect(screen.queryByTestId('catalog-card-sena')).toBeNull();
       expect(screen.queryByTestId('catalog-card-htp')).toBeNull();
-      expect(screen.getByText(/3 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/5 de 35 disponibles/i)).toBeDefined();
 
       // 2. Neuropsychology & Attention (4 instruments)
       const neuroChip = screen.getByRole('button', {
@@ -557,7 +557,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.getByTestId('catalog-card-moca')).toBeDefined();
       expect(screen.queryByTestId('catalog-card-wisc_v')).toBeNull();
       expect(screen.queryByTestId('catalog-card-mmpi_3')).toBeNull();
-      expect(screen.getByText(/4 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/8 de 35 disponibles/i)).toBeDefined();
 
       // 3. Personality & Psychopathology (3 instruments)
       const persChip = screen.getByRole('button', {
@@ -570,7 +570,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.getByTestId('catalog-card-mcmi_iv')).toBeDefined();
       expect(screen.queryByTestId('catalog-card-d2_r')).toBeNull();
       expect(screen.queryByTestId('catalog-card-wisc_v')).toBeNull();
-      expect(screen.getByText(/3 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/9 de 35 disponibles/i)).toBeDefined();
 
       // 4. Adaptive Behavior & Development (2 instruments)
       const adaptChip = screen.getByRole('button', {
@@ -581,7 +581,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.getByTestId('catalog-card-abas_3')).toBeDefined();
       expect(screen.getByTestId('catalog-card-vineland_3')).toBeDefined();
       expect(screen.queryByTestId('catalog-card-mmpi_3')).toBeNull();
-      expect(screen.getByText(/2 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/3 de 35 disponibles/i)).toBeDefined();
 
       // 5. Child, Adolescent & Emotional (6 instruments)
       const childChip = screen.getByRole('button', {
@@ -596,7 +596,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.getByTestId('catalog-card-phq_9')).toBeDefined();
       expect(screen.getByTestId('catalog-card-gad_7')).toBeDefined();
       expect(screen.queryByTestId('catalog-card-wisc_v')).toBeNull();
-      expect(screen.getByText(/6 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/9 de 35 disponibles/i)).toBeDefined();
 
       // 6. Projective Guides (1 instrument)
       const projChip = screen.getByRole('button', {
@@ -607,7 +607,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.getByTestId('catalog-card-htp')).toBeDefined();
       expect(screen.queryByTestId('catalog-card-wisc_v')).toBeNull();
       expect(screen.queryByTestId('catalog-card-sena')).toBeNull();
-      expect(screen.getByText(/1 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/1 de 35 disponibles/i)).toBeDefined();
 
       // 7. Reset to "Todos" (19 instruments)
       const allChip = screen.getByRole('button', { name: /^Todos\b/i });
@@ -615,7 +615,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
 
       expect(screen.getByTestId('catalog-card-wisc_v')).toBeDefined();
       expect(screen.getByTestId('catalog-card-htp')).toBeDefined();
-      expect(screen.getByText(/19 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/35 de 35 disponibles/i)).toBeDefined();
     });
   });
 
@@ -655,7 +655,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.queryByTestId('catalog-card-moca')).toBeNull();
       expect(screen.queryByTestId('catalog-card-phq_9')).toBeNull();
       expect(screen.queryByTestId('catalog-card-gad_7')).toBeNull();
-      expect(screen.getByText(/10 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/17 de 35 disponibles/i)).toBeDefined();
 
       // 2. Adulto (18-64)
       const adultPill = screen.getByRole('button', { name: /Adulto \(18-64\)/i });
@@ -682,7 +682,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.queryByTestId('catalog-card-cbcl')).toBeNull();
       expect(screen.queryByTestId('catalog-card-byi_2')).toBeNull();
       expect(screen.queryByTestId('catalog-card-sdq')).toBeNull();
-      expect(screen.getByText(/14 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/21 de 35 disponibles/i)).toBeDefined();
     });
 
     it('evaluates combinatorial intersecting filters (domain + age) with zero-match resilience', () => {
@@ -705,7 +705,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(
         screen.getByText(/No se encontraron instrumentos para el filtro seleccionado/i)
       ).toBeDefined();
-      expect(screen.getByText(/0 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/0 de 35 disponibles/i)).toBeDefined();
 
       // Intersect: Domain "Inteligencia" + Age "Infantil" -> WISC-V & Raven 2 (WAIS-IV excluded)
       const intelChip = screen.getByRole('button', {
@@ -716,7 +716,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.getByTestId('catalog-card-wisc_v')).toBeDefined();
       expect(screen.getByTestId('catalog-card-raven_2')).toBeDefined();
       expect(screen.queryByTestId('catalog-card-wais_iv')).toBeNull();
-      expect(screen.getByText(/2 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/3 de 35 disponibles/i)).toBeDefined();
 
       // Intersect: Domain "Infanto-Juvenil & Emocional" + Age "Adulto" -> PHQ-9 & GAD-7 (SENA, CBCL, BYI, SDQ excluded)
       const childChip = screen.getByRole('button', {
@@ -733,7 +733,7 @@ describe('Empirical Challenger 1 — Milestone M2-UI: Catalog Explorer Adversari
       expect(screen.queryByTestId('catalog-card-cbcl')).toBeNull();
       expect(screen.queryByTestId('catalog-card-byi_2')).toBeNull();
       expect(screen.queryByTestId('catalog-card-sdq')).toBeNull();
-      expect(screen.getByText(/2 de 19 disponibles/i)).toBeDefined();
+      expect(screen.getByText(/2 de 35 disponibles/i)).toBeDefined();
     });
   });
 

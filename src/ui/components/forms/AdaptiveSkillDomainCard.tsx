@@ -5,8 +5,11 @@ import {
   validateAbas3,
   calculateVineland3,
   validateVineland3,
+  calculateDp3,
+  validateDp3,
   Abas3CalculationResult,
   Vineland3CalculationResult,
+  Dp3CalculationResult,
 } from '../../../core';
 import {
   Abas3SkillAreaId,
@@ -22,7 +25,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-export type AdaptiveBatteryId = 'abas_3' | 'vineland_3';
+export type AdaptiveBatteryId = 'abas_3' | 'vineland_3' | 'dp_3';
 
 interface AdaptiveSkillDomainCardProps {
   batteryId: AdaptiveBatteryId;
@@ -44,6 +47,7 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
         scaleMin: 1,
         scaleMax: 19,
         scalePlaceholder: '10',
+        minAreasRequired: 9,
         domains: [
           {
             name: 'Dominio Conceptual',
@@ -74,13 +78,14 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
           },
         ],
       };
-    } else {
+    } else if (batteryId === 'vineland_3') {
       return {
         title: 'Vineland-3 — Escalas de Conducta Adaptativa de Vineland (3ª Edición)',
         subtitle: 'Puntuaciones v-scale (1-24) y Compuesto de Conducta Adaptativa (ABC, 100±15)',
         scaleMin: 1,
         scaleMax: 24,
         scalePlaceholder: '15',
+        minAreasRequired: 9,
         domains: [
           {
             name: 'Comunicación',
@@ -111,45 +116,90 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
           },
         ],
       };
+    } else {
+      return {
+        title: 'DP-3 — Perfil de Desarrollo - 3 (Alpern · TEA Ediciones)',
+        subtitle: 'Puntuaciones estándar (40-160, M=100, DE=15) en 5 escalas del desarrollo infantil e Índice General (IGD)',
+        scaleMin: 40,
+        scaleMax: 160,
+        scalePlaceholder: '100',
+        minAreasRequired: 5,
+        domains: [
+          {
+            name: 'Desarrollo Psicomotor y Adaptativo',
+            key: 'MOT',
+            areas: [
+              { id: 'MOT', name: 'Motricidad (MOT)' },
+              { id: 'ADP', name: 'Conducta Adaptativa (ADP)' },
+            ],
+          },
+          {
+            name: 'Desarrollo Socioemocional',
+            key: 'SOC',
+            areas: [
+              { id: 'SOC', name: 'Socioemocional (SOC)' },
+            ],
+          },
+          {
+            name: 'Desarrollo Cognitivo y Comunicativo',
+            key: 'COG',
+            areas: [
+              { id: 'COG', name: 'Cognición (COG)' },
+              { id: 'COM', name: 'Comunicación (COM)' },
+            ],
+          },
+        ],
+      };
     }
   }, [batteryId]);
 
   // Current values
   const currentInputs: Record<string, number> = useMemo(() => {
-    return batteryId === 'abas_3' ? data.skillAreas || {} : data.subdomains || {};
+    if (batteryId === 'abas_3') return data.skillAreas || {};
+    if (batteryId === 'vineland_3') return data.subdomains || {};
+    return data.scales || {};
   }, [batteryId, data]);
 
   // Validation
   const validation = useMemo(() => {
     if (batteryId === 'abas_3') {
       return validateAbas3({ skillAreas: currentInputs });
-    } else {
+    } else if (batteryId === 'vineland_3') {
       return validateVineland3({ subdomains: currentInputs });
+    } else {
+      return validateDp3({ scales: currentInputs });
     }
   }, [batteryId, currentInputs]);
 
   // Calculation
   const result = useMemo(() => {
     const answeredCount = Object.keys(currentInputs).length;
-    if (answeredCount < 9) return null;
+    if (answeredCount < config.minAreasRequired) return null;
 
     try {
       if (batteryId === 'abas_3') {
         return calculateAbas3({ skillAreas: currentInputs as Record<Abas3SkillAreaId, number> });
-      } else {
+      } else if (batteryId === 'vineland_3') {
         return calculateVineland3({ subdomains: currentInputs as Record<Vineland3SubdomainId, number> });
+      } else {
+        return calculateDp3({ scales: currentInputs });
       }
     } catch {
       return null;
     }
-  }, [batteryId, currentInputs]);
+  }, [batteryId, currentInputs, config.minAreasRequired]);
 
   // Change a single score
   const handleScoreChange = useCallback(
     (areaId: string, val: number) => {
       const clamped = Math.max(config.scaleMin, Math.min(config.scaleMax, val));
       setBatteryData(batteryId, (prev: any = {}) => {
-        const key = batteryId === 'abas_3' ? 'skillAreas' : 'subdomains';
+        const key =
+          batteryId === 'abas_3'
+            ? 'skillAreas'
+            : batteryId === 'vineland_3'
+            ? 'subdomains'
+            : 'scales';
         return {
           ...prev,
           [key]: {
@@ -164,7 +214,14 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
 
   // Clear
   const handleClear = useCallback(() => {
-    setBatteryData(batteryId, batteryId === 'abas_3' ? { skillAreas: {} } : { subdomains: {} });
+    setBatteryData(
+      batteryId,
+      batteryId === 'abas_3'
+        ? { skillAreas: {} }
+        : batteryId === 'vineland_3'
+        ? { subdomains: {} }
+        : { scales: {} }
+    );
   }, [batteryId, setBatteryData]);
 
   // Presets
@@ -180,7 +237,6 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             },
           });
         } else if (preset === 'deficit') {
-          // Benchmark Case ABAS-2 (GAC = 62 <= 69)
           setBatteryData('abas_3', {
             skillAreas: {
               COM: 4, HAF: 3, AD: 4,
@@ -189,7 +245,6 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             },
           });
         } else {
-          // Superior
           setBatteryData('abas_3', {
             skillAreas: {
               COM: 14, HAF: 15, AD: 13,
@@ -198,8 +253,7 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             },
           });
         }
-      } else {
-        // Vineland-3
+      } else if (batteryId === 'vineland_3') {
         if (preset === 'typical') {
           setBatteryData('vineland_3', {
             subdomains: {
@@ -209,7 +263,6 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             },
           });
         } else if (preset === 'deficit') {
-          // Benchmark Case VINE-2 (ABC = 63 <= 70)
           setBatteryData('vineland_3', {
             subdomains: {
               receptive: 8, expressive: 6, written: 7,
@@ -224,6 +277,21 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
               personal: 18, domestic: 17, community: 18,
               interpersonal: 18, playLeisure: 17, coping: 18,
             },
+          });
+        }
+      } else {
+        // DP-3
+        if (preset === 'typical') {
+          setBatteryData('dp_3', {
+            scales: { MOT: 102, ADP: 100, SOC: 98, COG: 101, COM: 99 },
+          });
+        } else if (preset === 'deficit') {
+          setBatteryData('dp_3', {
+            scales: { MOT: 68, ADP: 64, SOC: 66, COG: 62, COM: 60 },
+          });
+        } else {
+          setBatteryData('dp_3', {
+            scales: { MOT: 122, ADP: 120, SOC: 118, COG: 126, COM: 124 },
           });
         }
       }
@@ -310,11 +378,11 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
           <TrendingDown className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-black">
-              ALERTA CLÍNICA DE DÉFICIT EN CONDUCTA ADAPTATIVA (DSM-5 / AAIDD)
+              ALERTA CLÍNICA DE DÉFICIT EN CONDUCTA ADAPTATIVA / DESARROLLO (DSM-5 / AAIDD)
             </h4>
             <p className="text-xs text-red-800 mt-1">
               {result.clinicalAlert ||
-                'Puntuación compuesta adaptativa en rango clínico significativo (≤ 69 en ABAS-3 o ≤ 70 en Vineland-3). Cumple criterio de limitación funcional para evaluación de Discapacidad Intelectual.'}
+                'Puntuación compuesta en rango clínico significativo (≤ 69/70). Cumple criterio de limitación funcional o retraso evolutivo.'}
             </p>
           </div>
         </div>
@@ -332,7 +400,7 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   {dom.name}
                 </h3>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[10px] font-mono text-slate-500">
                   Rango {config.scaleMin}..{config.scaleMax}
                 </span>
               </div>
@@ -355,12 +423,13 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
                         min={config.scaleMin}
                         max={config.scaleMax}
                         aria-label={`Puntuación para ${area.name}`}
+                        aria-invalid={!validation.isValid}
                         value={val}
                         onChange={(e) => {
                           const n = parseInt(e.target.value, 10);
                           handleScoreChange(area.id, isNaN(n) ? config.scaleMin : n);
                         }}
-                        className="w-16 py-1.5 px-2 text-center font-bold text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm focus:bg-white"
+                        className="psych-score-input w-16 py-1.5 px-2 text-center font-mono tabular-nums font-bold text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm focus:bg-white"
                         placeholder={config.scalePlaceholder}
                       />
                     </div>
@@ -373,7 +442,7 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             {result && (
               <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span className="text-slate-500">Puntaje Compuesto:</span>
-                <span className="font-black text-emerald-800 text-sm">
+                <span className="font-mono tabular-nums font-black text-emerald-800 text-sm">
                   {batteryId === 'abas_3'
                     ? (result.domains as any)[dom.key]?.compositeScore ?? '—'
                     : (result.domains as any)[dom.key]?.standardScore ?? '—'}
@@ -391,7 +460,9 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">
               {batteryId === 'abas_3'
                 ? 'Compuesto General de Adaptación (CAG / GAC)'
-                : 'Compuesto de Conducta Adaptativa (ABC)'}
+                : batteryId === 'vineland_3'
+                ? 'Compuesto de Conducta Adaptativa (ABC)'
+                : 'Índice General de Desarrollo (IGD - DP-3)'}
             </h4>
             <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-300 border border-emerald-700">
               M = 100, DE = 15
@@ -402,23 +473,42 @@ export const AdaptiveSkillDomainCard: React.FC<AdaptiveSkillDomainCardProps> = (
             {(() => {
               const abasRes = batteryId === 'abas_3' ? (result as Abas3CalculationResult) : null;
               const vineRes = batteryId === 'vineland_3' ? (result as Vineland3CalculationResult) : null;
+              const dp3Res = batteryId === 'dp_3' ? (result as Dp3CalculationResult) : null;
+
+              const globalScore = abasRes
+                ? abasRes.gac.compositeScore
+                : vineRes
+                ? vineRes.abc.standardScore
+                : dp3Res?.igd.standardScore ?? 0;
+
+              const globalPct = abasRes
+                ? abasRes.gac.percentile
+                : vineRes
+                ? vineRes.abc.percentile
+                : dp3Res?.igd.percentile ?? 0;
+
+              const globalQual = abasRes
+                ? abasRes.gac.qualitative
+                : vineRes
+                ? vineRes.abc.descriptor
+                : dp3Res?.igd.qualitative ?? '';
+
               return (
                 <>
                   <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
                     <span className="text-slate-400 block mb-1">Puntuación Estándar Global:</span>
-                    <span className="text-3xl font-black text-emerald-400">
-                      {abasRes ? abasRes.gac.compositeScore : (vineRes?.abc.standardScore ?? 0)}
+                    <span className="text-3xl font-mono tabular-nums font-black text-emerald-400">
+                      {globalScore}
                     </span>
                     <span className="text-[10px] text-slate-400 block mt-1">
-                      Percentil:{' '}
-                      {abasRes ? abasRes.gac.percentile : (vineRes?.abc.percentile ?? 0)}
+                      Percentil: {globalPct}
                     </span>
                   </div>
 
                   <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
                     <span className="text-slate-400 block mb-1">Clasificación Cualitativa:</span>
                     <span className="text-base font-bold text-white mt-1 block">
-                      {abasRes ? abasRes.gac.qualitative : (vineRes?.abc.descriptor ?? '')}
+                      {globalQual}
                     </span>
                   </div>
                 </>

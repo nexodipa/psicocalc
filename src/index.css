@@ -4,12 +4,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base app adjustments */
+/* Base clinical workstation adjustments (Q-global / TEA Corrige / Linear style) */
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-slate-50 text-slate-900 antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-image: radial-gradient(rgba(148, 163, 184, 0.14) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
+}
+
+/* Accessible input validation after interaction (modern-web-guidance: validate-input-after-interaction) */
+input.psych-score-input:user-invalid,
+input[type="number"]:user-invalid {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+  color: #7f1d1d;
+}
+
+input.psych-score-input:user-valid {
+  border-color: #cbd5e1;
+}
+
+/* Tabular numerals for psychometric alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Custom interactive scrollbar */

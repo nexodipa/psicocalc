@@ -2,11 +2,11 @@ import React, { useMemo, useCallback } from 'react';
 import { useClinicalSession } from '../../context/ClinicalSessionContext';
 import {
   calculateNeuropsiBreve,
-  validateNeuropsiBreve,
   calculateMmse,
-  validateMmse,
+  calculateNeuroChecklist,
   NeuropsiBreveCalculationResult,
   MmseCalculationResult,
+  NeuroChecklistResult,
   getNormacodemDelta,
   getNeuropsiEducationLevel,
   getNeuropsiAgeGroup,
@@ -21,7 +21,12 @@ import {
   Layers,
 } from 'lucide-react';
 
-export type ScreeningInstrumentId = 'neuropsi_breve' | 'mmse';
+export type ScreeningInstrumentId =
+  | 'neuropsi_breve'
+  | 'mmse'
+  | 'cumanes'
+  | 'neuro_kid'
+  | 'lole';
 
 interface DomainChecklistScreeningCardProps {
   instrumentId: ScreeningInstrumentId;
@@ -34,15 +39,25 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
 
   const data = testData[instrumentId] || {};
 
+  const isPediatricNeuro = ['cumanes', 'neuro_kid', 'lole'].includes(instrumentId);
+
   // Age and education defaults
   const patientAge = demographics.birthDate
-    ? Math.max(16, Math.floor((new Date().getTime() - new Date(demographics.birthDate).getTime()) / (365.25 * 24 * 3600 * 1000)))
+    ? Math.max(
+        isPediatricNeuro ? 3 : 16,
+        Math.floor(
+          (new Date().getTime() - new Date(demographics.birthDate).getTime()) /
+            (365.25 * 24 * 3600 * 1000)
+        )
+      )
+    : isPediatricNeuro
+    ? 8
     : 45;
   const age = typeof data.age === 'number' && data.age > 0 ? data.age : patientAge;
   const educationYears =
     typeof data.educationYears === 'number'
       ? data.educationYears
-      : demographics.educationYears ?? 12;
+      : demographics.educationYears ?? (isPediatricNeuro ? 3 : 12);
 
   // Domain configurations
   const domainsConfig = useMemo(() => {
@@ -56,7 +71,7 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
         { id: 'executiveFunctions', name: 'Funciones Ejecutivas', max: 18, desc: 'Fluidez verbal, semejanzas y secuencias motoras' },
         { id: 'recallMemory', name: 'Memoria de Evocación', max: 25, desc: 'Evocación libre y con claves de lista y figura' },
       ];
-    } else {
+    } else if (instrumentId === 'mmse') {
       return [
         { id: 'orientationTime', name: 'Orientación Temporal', max: 5, desc: 'Día, fecha, mes, año, estación' },
         { id: 'orientationSpace', name: 'Orientación Espacial', max: 5, desc: 'Lugar, planta, ciudad, provincia, país' },
@@ -65,7 +80,38 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
         { id: 'recall', name: 'Memoria Diferida', max: 3, desc: 'Recuerdo de las 3 palabras' },
         { id: 'languagePraxis', name: 'Lenguaje y Praxias', max: 9, desc: 'Nombrar objetos, repetir frase, orden 3 pasos, copiar pentágonos' },
       ];
+    } else if (instrumentId === 'cumanes') {
+      return [
+        { id: 'lenguaje_comprensivo', name: 'Lenguaje Comprensivo y Audioverbal', max: 20, desc: 'Comprensión audioverbal y de imágenes' },
+        { id: 'lenguaje_expresivo', name: 'Fluidez Fonológica y Semántica', max: 20, desc: 'Fluidez verbal y leximetría' },
+        { id: 'visopercepcion', name: 'Visopercepción', max: 20, desc: 'Reproducción gráfica de figuras geométricas' },
+        { id: 'funcion_ejecutiva', name: 'Función Ejecutiva (Tiempo / Errores)', max: 20, desc: 'Secuenciación alternante y flexibilidad' },
+        { id: 'memoria_verbal_visual', name: 'Memoria Verbal e Icónica', max: 20, desc: 'Evocación libre de palabras y láminas' },
+        { id: 'ritmo', name: 'Ritmo y Lateralidad', max: 20, desc: 'Estructuración rítmica secuencial' },
+      ];
+    } else if (instrumentId === 'neuro_kid') {
+      return [
+        { id: 'motricidad', name: 'Coordinación y Praxias Motoras', max: 20, desc: 'Motricidad fina y gruesa' },
+        { id: 'lenguaje_temprano', name: 'Lenguaje Articulatorio y Comprensivo', max: 20, desc: 'Denominación e identificación temprana' },
+        { id: 'visoespacial', name: 'Construcción Visoespacial', max: 20, desc: 'Copia de trazos e integración perceptual' },
+        { id: 'memoria_atencion', name: 'Atención y Memoria Inmediata', max: 20, desc: 'Rastreo visual y retención de estímulos' },
+      ];
+    } else {
+      // LOLE
+      return [
+        { id: 'rima_aliteracion', name: 'Conciencia Silábica (Rima y Aliteración)', max: 20, desc: 'Identificación y emparejamiento de rimas' },
+        { id: 'segmentacion_fonemica', name: 'Conciencia Fonémica y Segmentación', max: 20, desc: 'Aislamiento y síntesis de fonemas' },
+        { id: 'vocabulario_morfosintaxis', name: 'Vocabulario y Morfosintaxis Oral', max: 20, desc: 'Estructuras gramaticales y cierre morfémico' },
+        { id: 'lectura_inicial', name: 'Decodificación y Lectoescritura Inicial', max: 20, desc: 'Conversión grafema-fonema y lectura de palabras' },
+      ];
     }
+  }, [instrumentId]);
+
+  const maxTotalScore = useMemo(() => {
+    if (instrumentId === 'neuropsi_breve') return 130;
+    if (instrumentId === 'mmse') return 30;
+    if (instrumentId === 'cumanes') return 120;
+    return 80;
   }, [instrumentId]);
 
   // Current domain scores
@@ -79,7 +125,7 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
   }, [domainsConfig, domainScores]);
 
   const rawScore =
-    instrumentId === 'neuropsi_breve'
+    instrumentId === 'neuropsi_breve' || isPediatricNeuro
       ? data.totalRawScore !== undefined
         ? data.totalRawScore
         : computedRawSum
@@ -97,12 +143,18 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
           age,
           educationYears,
         });
-      } else {
+      } else if (instrumentId === 'mmse') {
         return calculateMmse({
           domainScores,
           rawScore,
           age,
           educationYears,
+        });
+      } else {
+        return calculateNeuroChecklist(instrumentId, {
+          domainScores,
+          totalRawScore: rawScore,
+          age,
         });
       }
     } catch {
@@ -124,9 +176,9 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
         return {
           ...prev,
           domainScores: nextDomains,
-          ...(instrumentId === 'neuropsi_breve'
-            ? { totalRawScore: nextTotal }
-            : { rawScore: nextTotal }),
+          ...(instrumentId === 'mmse'
+            ? { rawScore: nextTotal }
+            : { totalRawScore: nextTotal }),
         };
       });
     },
@@ -136,16 +188,15 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
   // Direct total update
   const handleDirectTotalChange = useCallback(
     (val: number) => {
-      const maxTotal = instrumentId === 'neuropsi_breve' ? 130 : 30;
-      const clamped = Math.max(0, Math.min(maxTotal, val));
+      const clamped = Math.max(0, Math.min(maxTotalScore, val));
       setBatteryData(instrumentId, (prev: any = {}) => ({
         ...prev,
-        ...(instrumentId === 'neuropsi_breve'
-          ? { totalRawScore: clamped }
-          : { rawScore: clamped }),
+        ...(instrumentId === 'mmse'
+          ? { rawScore: clamped }
+          : { totalRawScore: clamped }),
       }));
     },
-    [instrumentId, setBatteryData]
+    [instrumentId, maxTotalScore, setBatteryData]
   );
 
   // Demographics update
@@ -163,11 +214,11 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
   const handleClear = useCallback(() => {
     setBatteryData(instrumentId, {
       domainScores: {},
-      ...(instrumentId === 'neuropsi_breve' ? { totalRawScore: 0 } : { rawScore: 0 }),
-      age: 45,
-      educationYears: 12,
+      ...(instrumentId === 'mmse' ? { rawScore: 0 } : { totalRawScore: 0 }),
+      age: isPediatricNeuro ? 8 : 45,
+      educationYears: isPediatricNeuro ? 3 : 12,
     });
-  }, [instrumentId, setBatteryData]);
+  }, [instrumentId, isPediatricNeuro, setBatteryData]);
 
   // Presets
   const handleLoadSample = useCallback(
@@ -189,7 +240,6 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
             },
           });
         } else if (preset === 'moderate') {
-          // Benchmark Case 9
           setBatteryData('neuropsi_breve', {
             age: 68,
             educationYears: 7,
@@ -220,10 +270,8 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
             },
           });
         }
-      } else {
-        // MMSE
+      } else if (instrumentId === 'mmse') {
         if (preset === 'normal') {
-          // Benchmark 10B
           setBatteryData('mmse', {
             age: 32,
             educationYears: 18,
@@ -238,7 +286,6 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
             },
           });
         } else if (preset === 'moderate') {
-          // Benchmark 10A
           setBatteryData('mmse', {
             age: 78,
             educationYears: 6,
@@ -267,10 +314,40 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
             },
           });
         }
+      } else {
+        // Pediatric Neuro (CUMANES / NEURO-KID / LOLE)
+        const ratio = preset === 'normal' ? 0.8 : preset === 'moderate' ? 0.42 : 0.22;
+        const domMap: Record<string, number> = {};
+        let sum = 0;
+        domainsConfig.forEach((d) => {
+          const v = Math.round(d.max * ratio);
+          domMap[d.id] = v;
+          sum += v;
+        });
+        setBatteryData(instrumentId, {
+          age: instrumentId === 'neuro_kid' ? 5 : 8,
+          totalRawScore: sum,
+          domainScores: domMap,
+        });
       }
     },
-    [instrumentId, setBatteryData]
+    [instrumentId, domainsConfig, setBatteryData]
   );
+
+  const headerTitle = useMemo(() => {
+    switch (instrumentId) {
+      case 'neuropsi_breve':
+        return 'NEUROPSI Breve — Evaluación Neuropsicológica en Español';
+      case 'mmse':
+        return 'MMSE — Mini-Mental State Examination (Folstein / NORMACODEM)';
+      case 'cumanes':
+        return 'CUMANES — Cuestionario de Madurez Neuropsicológica Escolar (7-11 años)';
+      case 'neuro_kid':
+        return 'NEURO-KID — Cribado Neuropsicológico Infantil Rápido (3-7 años)';
+      case 'lole':
+        return 'LOLE — Evaluación del Lenguaje Oral al Lenguaje Escrito y Conciencia Fonológica';
+    }
+  }, [instrumentId]);
 
   return (
     <div className="space-y-6" data-testid={`screening-form-${instrumentId}`}>
@@ -283,15 +360,15 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
                 <BookOpen className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-black text-slate-900 tracking-tight">
-                {instrumentId === 'neuropsi_breve'
-                  ? 'NEUROPSI Breve — Evaluación Neuropsicológica en Español'
-                  : 'MMSE — Mini-Mental State Examination (Folstein / NORMACODEM)'}
+                {headerTitle}
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               {instrumentId === 'neuropsi_breve'
                 ? 'Matriz normativa de 16 celdas según estratificación por edad y escolaridad formal'
-                : 'Cribado cognitivo con ajuste demográfico edad × escolaridad (estudio NORMACODEM)'}
+                : instrumentId === 'mmse'
+                ? 'Cribado cognitivo con ajuste demográfico edad × escolaridad (estudio NORMACODEM)'
+                : 'Evaluación neuropsicológica del desarrollo con Índice General (M=100, DE=15) y Decatipos (1-10)'}
             </p>
           </div>
 
@@ -345,12 +422,12 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
             <input
               id="screening-age-input"
               type="number"
-              min="16"
-              max="99"
+              min={isPediatricNeuro ? 3 : 16}
+              max={isPediatricNeuro ? 14 : 99}
               aria-label="Edad del paciente"
               value={age}
               onChange={(e) => handleDemographicChange('age', parseInt(e.target.value, 10) || 0)}
-              className="w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="psych-score-input w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg font-mono tabular-nums font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             {instrumentId === 'neuropsi_breve' && (
               <span className="text-[10px] text-slate-500 mt-0.5 block">
@@ -372,32 +449,34 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
               aria-label="Años de escolaridad"
               value={educationYears}
               onChange={(e) => handleDemographicChange('educationYears', parseInt(e.target.value, 10) || 0)}
-              className="w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="psych-score-input w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg font-mono tabular-nums font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <span className="text-[10px] text-slate-500 mt-0.5 block">
               {instrumentId === 'neuropsi_breve'
                 ? `Estrato: ${getNeuropsiEducationLevel(educationYears)}`
-                : `Ajuste NORMACODEM: ${getNormacodemDelta(age, educationYears) >= 0 ? '+' : ''}${getNormacodemDelta(age, educationYears)} ptos`}
+                : instrumentId === 'mmse'
+                ? `Ajuste NORMACODEM: ${getNormacodemDelta(age, educationYears) >= 0 ? '+' : ''}${getNormacodemDelta(age, educationYears)} ptos`
+                : 'Escolaridad infantil / primaria'}
             </span>
           </div>
 
           <div>
             <label htmlFor="screening-total-input" className="font-bold text-slate-700 flex items-center gap-1.5 mb-1">
               <Layers className="w-3.5 h-3.5 text-slate-500" />
-              <span>Puntuación Total Directa:</span>
+              <span>Puntuación Total Directa (0–{maxTotalScore}):</span>
             </label>
             <input
               id="screening-total-input"
               type="number"
               min="0"
-              max={instrumentId === 'neuropsi_breve' ? 130 : 30}
+              max={maxTotalScore}
               aria-label="Puntuación total directa"
               value={rawScore}
               onChange={(e) => handleDirectTotalChange(parseInt(e.target.value, 10) || 0)}
-              className="w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg font-black text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="psych-score-input w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg font-mono tabular-nums font-black text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <span className="text-[10px] text-slate-500 mt-0.5 block">
-              Máximo: {instrumentId === 'neuropsi_breve' ? '130 puntos' : '30 puntos'}
+              Máximo: {maxTotalScore} puntos
             </span>
           </div>
         </div>
@@ -418,7 +497,7 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
               {result.alertMessage ||
                 (instrumentId === 'mmse'
                   ? `Puntuación ajustada (${(result as MmseCalculationResult).adjustedScore} / 30) inferior al punto de corte clínico (< 24).`
-                  : `Clasificación diagnóstica en rango de: ${(result as NeuropsiBreveCalculationResult).classification}`)}
+                  : `Clasificación diagnóstica en rango de: ${result.classification}`)}
             </p>
           </div>
         </div>
@@ -430,7 +509,7 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
             Desglose por Subdominios Cognitivos
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 font-mono tabular-nums">
             Suma calculada: {computedRawSum} puntos
           </span>
         </div>
@@ -449,7 +528,7 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400 font-medium">
+                  <span className="text-xs text-slate-400 font-mono">
                     (0 a {dom.max})
                   </span>
 
@@ -466,7 +545,7 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
                         parseInt(e.target.value, 10) || 0
                       )
                     }
-                    className="w-16 py-1.5 px-2 text-center font-bold text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white text-sm"
+                    className="psych-score-input w-16 py-1.5 px-2 text-center font-mono tabular-nums font-bold text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white text-sm"
                   />
                 </div>
               </div>
@@ -483,7 +562,11 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
               Diagnóstico y Clasificación Normativa
             </h4>
             <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-900/40 text-indigo-300 border border-indigo-700">
-              {instrumentId === 'neuropsi_breve' ? 'Baremo UNAM / Ostrosky' : 'Baremo Lobo / Blesa'}
+              {instrumentId === 'neuropsi_breve'
+                ? 'Baremo UNAM / Ostrosky'
+                : instrumentId === 'mmse'
+                ? 'Baremo Lobo / Blesa'
+                : 'Baremo Neuropsicológico Infantil'}
             </span>
           </div>
 
@@ -491,18 +574,32 @@ export const DomainChecklistScreeningCard: React.FC<DomainChecklistScreeningCard
             {(() => {
               const isMmse = instrumentId === 'mmse';
               const mmseRes = isMmse ? (result as MmseCalculationResult) : null;
-              const neuroRes = !isMmse ? (result as NeuropsiBreveCalculationResult) : null;
+              const pedRes = isPediatricNeuro ? (result as NeuroChecklistResult) : null;
+              const neuroRes =
+                !isMmse && !isPediatricNeuro
+                  ? (result as NeuropsiBreveCalculationResult)
+                  : null;
               return (
                 <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
                   <span className="text-slate-400 block mb-1">
-                    {isMmse ? 'Puntuación Ajustada:' : 'Puntuación Directa:'}
+                    {isMmse
+                      ? 'Puntuación Ajustada:'
+                      : isPediatricNeuro
+                      ? 'Índice Estándar / Decatipo:'
+                      : 'Puntuación Directa:'}
                   </span>
-                  <span className="text-2xl font-black text-indigo-400">
-                    {mmseRes ? mmseRes.adjustedScore : (neuroRes?.totalScore ?? 0)}
+                  <span className="text-2xl font-mono tabular-nums font-black text-indigo-400">
+                    {mmseRes
+                      ? mmseRes.adjustedScore
+                      : pedRes
+                      ? `${pedRes.standardIndex} (Decatipo ${pedRes.decatype})`
+                      : neuroRes?.totalScore ?? 0}
                   </span>
                   <span className="text-[10px] text-slate-400 block mt-0.5">
                     {mmseRes
                       ? `Directa: ${mmseRes.rawScore} ptos (Delta: ${mmseRes.adjustmentDelta >= 0 ? '+' : ''}${mmseRes.adjustmentDelta})`
+                      : pedRes
+                      ? `Percentil ${pedRes.percentile} · PD: ${pedRes.totalScore}/${pedRes.maxScore}`
                       : `Sobre 130 puntos posibles`}
                   </span>
                 </div>

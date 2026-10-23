@@ -91,17 +91,39 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
   const handleCategoryClick = (catId: ClinicalCategory) => {
     setActiveCategory(catId);
     if (catId === 'catalog') {
-      // Show catalog
       return;
     }
     if (catId === 'intelligence') {
       setActiveInstrument(currentBattery === 'WISC-V' ? 'wisc_v' : 'wais_iv');
     } else if (catId === 'behavior_emotion') {
-      if (!['sdq', 'phq_9', 'gad_7', 'sena', 'cbcl', 'byi_2'].includes(activeInstrument)) {
+      if (
+        ![
+          'sdq',
+          'phq_9',
+          'gad_7',
+          'sena',
+          'cbcl',
+          'byi_2',
+          'cecad',
+          'iac',
+          'iccp',
+        ].includes(activeInstrument)
+      ) {
         setActiveInstrument('sdq');
       }
     } else if (catId === 'neurocognitive') {
-      if (!['moca', 'd2_r', 'neuropsi_breve', 'mmse'].includes(activeInstrument)) {
+      if (
+        ![
+          'moca',
+          'd2_r',
+          'neuropsi_breve',
+          'mmse',
+          'brief_a',
+          'cumanes',
+          'neuro_kid',
+          'lole',
+        ].includes(activeInstrument)
+      ) {
         setActiveInstrument('moca');
       }
     } else if (catId === 'projective') {
@@ -118,17 +140,44 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
     } else if (instId === 'wais_iv') {
       setBattery('WAIS-IV');
       setActiveCategory('intelligence');
-    } else if (['sdq', 'phq_9', 'gad_7', 'sena', 'cbcl', 'byi_2'].includes(instId)) {
+    } else if (
+      ['sdq', 'phq_9', 'gad_7', 'sena', 'cbcl', 'byi_2', 'cecad', 'iac', 'iccp'].includes(
+        instId
+      )
+    ) {
       setActiveCategory('behavior_emotion');
-    } else if (['moca', 'd2_r', 'neuropsi_breve', 'mmse'].includes(instId)) {
+    } else if (
+      [
+        'moca',
+        'd2_r',
+        'neuropsi_breve',
+        'mmse',
+        'brief_a',
+        'cumanes',
+        'neuro_kid',
+        'lole',
+      ].includes(instId)
+    ) {
       setActiveCategory('neurocognitive');
     } else if (instId === 'htp') {
       setActiveCategory('projective');
-    } else if (['mmpi_3', 'pai', 'mcmi_iv'].includes(instId)) {
+    } else if (
+      [
+        'mmpi_3',
+        'pai',
+        'mcmi_iv',
+        'mmpi_rf',
+        'mmpi_a_rf',
+        'bfq',
+        'staxi_2',
+        'lsb_50',
+        'maci_iv',
+      ].includes(instId)
+    ) {
       setActiveCategory('personality_psychopathology');
-    } else if (['abas_3', 'vineland_3'].includes(instId)) {
+    } else if (['abas_3', 'vineland_3', 'dp_3'].includes(instId)) {
       setActiveCategory('adaptive_behavior');
-    } else if (instId === 'raven_2') {
+    } else if (['raven_2', 'toni_4', 'ipp_r'].includes(instId)) {
       setActiveCategory('intelligence_aptitudes');
     }
   };
@@ -309,7 +358,7 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
           className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all shrink-0"
         >
           <Plus className="w-3 h-3" />
-          <span>Explorar Catálogo</span>
+          <span>Explorar Catálogo (35 Pruebas)</span>
         </button>
       </div>
 
@@ -352,20 +401,23 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
               )}
             </button>
 
-            {activeBatteryIds.includes('raven_2') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('raven_2')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'raven_2'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>Raven 2</span>
-                <span className="text-[10px] font-normal text-slate-500">(Matrices)</span>
-              </button>
-            )}
+            {['raven_2', 'toni_4', 'ipp_r'].map((id) => {
+              const def = TestRegistry.get(id);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleInstrumentClick(id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeInstrument === id
+                      ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{def?.metadata.name || id.toUpperCase()}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -425,47 +477,23 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
               )}
             </button>
 
-            {activeBatteryIds.includes('sena') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('sena')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'sena'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>SENA</span>
-              </button>
-            )}
-
-            {activeBatteryIds.includes('cbcl') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('cbcl')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'cbcl'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>CBCL</span>
-              </button>
-            )}
-
-            {activeBatteryIds.includes('byi_2') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('byi_2')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'byi_2'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>BYI-2</span>
-              </button>
-            )}
+            {['sena', 'cbcl', 'byi_2', 'cecad', 'iac', 'iccp'].map((id) => {
+              const def = TestRegistry.get(id);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleInstrumentClick(id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeInstrument === id
+                      ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{def?.metadata.name || id.toUpperCase()}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -495,47 +523,31 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
               ) : null}
             </button>
 
-            {activeBatteryIds.includes('d2_r') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('d2_r')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'd2_r'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>D2-R (Atención)</span>
-              </button>
-            )}
-
-            {activeBatteryIds.includes('neuropsi_breve') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('neuropsi_breve')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'neuropsi_breve'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>NEUROPSI Breve</span>
-              </button>
-            )}
-
-            {activeBatteryIds.includes('mmse') && (
-              <button
-                type="button"
-                onClick={() => handleInstrumentClick('mmse')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeInstrument === 'mmse'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>MMSE</span>
-              </button>
-            )}
+            {[
+              'd2_r',
+              'neuropsi_breve',
+              'mmse',
+              'brief_a',
+              'cumanes',
+              'neuro_kid',
+              'lole',
+            ].map((id) => {
+              const def = TestRegistry.get(id);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleInstrumentClick(id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeInstrument === id
+                      ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{def?.metadata.name || id.toUpperCase()}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -546,7 +558,17 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
             Personalidad:
           </span>
           <div className="flex items-center gap-1 flex-1 flex-wrap">
-            {['mmpi_3', 'pai', 'mcmi_iv'].map((pId) => {
+            {[
+              'mmpi_3',
+              'pai',
+              'mcmi_iv',
+              'mmpi_rf',
+              'mmpi_a_rf',
+              'bfq',
+              'staxi_2',
+              'lsb_50',
+              'maci_iv',
+            ].map((pId) => {
               const def = TestRegistry.get(pId);
               return (
                 <button
@@ -573,7 +595,7 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
             Conducta Adaptativa:
           </span>
           <div className="flex items-center gap-1 flex-1 flex-wrap">
-            {['abas_3', 'vineland_3'].map((aId) => {
+            {['abas_3', 'vineland_3', 'dp_3'].map((aId) => {
               const def = TestRegistry.get(aId);
               return (
                 <button

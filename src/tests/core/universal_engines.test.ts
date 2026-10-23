@@ -48,14 +48,14 @@ describe('Universal Psychometric Suite — Core Engines & Registry (Milestone M1
   describe('1. Centralized TestRegistry Architecture', () => {
     it('registers all 19 psychometric instruments across 6 clinical domains', () => {
       const all = TestRegistry.getAll();
-      expect(all.length).toBe(19);
+      expect(all.length).toBe(35);
 
       const expectedIds = [
-        'wisc_v', 'wais_iv', 'raven_2',
-        'd2_r', 'neuropsi_breve', 'mmse', 'moca',
-        'mmpi_3', 'pai', 'mcmi_iv',
-        'abas_3', 'vineland_3',
-        'sena', 'cbcl', 'byi_2', 'sdq', 'phq_9', 'gad_7',
+        'wisc_v', 'wais_iv', 'raven_2', 'toni_4', 'ipp_r',
+        'd2_r', 'neuropsi_breve', 'mmse', 'moca', 'brief_a', 'cumanes', 'neuro_kid', 'lole',
+        'mmpi_3', 'pai', 'mcmi_iv', 'mmpi_rf', 'mmpi_a_rf', 'bfq', 'staxi_2', 'lsb_50', 'maci_iv',
+        'abas_3', 'vineland_3', 'dp_3',
+        'sena', 'cbcl', 'byi_2', 'sdq', 'phq_9', 'gad_7', 'cecad', 'iac', 'iccp',
         'htp',
       ];
 
@@ -74,19 +74,19 @@ describe('Universal Psychometric Suite — Core Engines & Registry (Milestone M1
 
     it('categorizes instruments accurately across the 6 clinical domains', () => {
       expect(TestRegistry.getByDomain('intelligence_aptitudes').map((i) => i.metadata.id)).toEqual([
-        'wisc_v', 'wais_iv', 'raven_2',
+        'wisc_v', 'wais_iv', 'raven_2', 'toni_4', 'ipp_r',
       ]);
       expect(TestRegistry.getByDomain('neuropsychology_attention').map((i) => i.metadata.id)).toEqual([
-        'd2_r', 'neuropsi_breve', 'mmse', 'moca',
+        'd2_r', 'neuropsi_breve', 'mmse', 'moca', 'brief_a', 'cumanes', 'neuro_kid', 'lole',
       ]);
       expect(TestRegistry.getByDomain('personality_psychopathology').map((i) => i.metadata.id)).toEqual([
-        'mmpi_3', 'pai', 'mcmi_iv',
+        'mmpi_3', 'pai', 'mcmi_iv', 'mmpi_rf', 'mmpi_a_rf', 'bfq', 'staxi_2', 'lsb_50', 'maci_iv',
       ]);
       expect(TestRegistry.getByDomain('adaptive_behavior').map((i) => i.metadata.id)).toEqual([
-        'abas_3', 'vineland_3',
+        'abas_3', 'vineland_3', 'dp_3',
       ]);
       expect(TestRegistry.getByDomain('child_adolescent_emotional').map((i) => i.metadata.id)).toEqual([
-        'sena', 'cbcl', 'byi_2', 'sdq', 'phq_9', 'gad_7',
+        'sena', 'cbcl', 'byi_2', 'sdq', 'phq_9', 'gad_7', 'cecad', 'iac', 'iccp',
       ]);
       expect(TestRegistry.getByDomain('projective_guides').map((i) => i.metadata.id)).toEqual([
         'htp',
