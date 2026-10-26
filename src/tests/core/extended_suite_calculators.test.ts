@@ -11,6 +11,8 @@ import {
   calculateExtendedLikert,
   validateExtendedLikert,
   TestRegistry,
+  CLINICAL_VIGNETTES,
+  DEFAULT_INSTITUTIONAL_BRANDING,
 } from '../../core';
 
 describe('Extended 16-Instrument Psychometric Suite (35 Total Instruments)', () => {
@@ -116,6 +118,31 @@ describe('Extended 16-Instrument Psychometric Suite (35 Total Instruments)', () 
       });
       expect(res.validity.isValidProtocol).toBe(true);
       expect(res.summary.length).toBeGreaterThan(10);
+    }
+  });
+
+  it('validates all 6 simulated clinical case vignettes and their multi-instrument data slices', () => {
+    expect(CLINICAL_VIGNETTES).toHaveLength(6);
+    expect(DEFAULT_INSTITUTIONAL_BRANDING.clinicName).toContain('Centro de Neuropsicología');
+
+    for (const vignette of CLINICAL_VIGNETTES) {
+      expect(vignette.id.length).toBeGreaterThan(3);
+      expect(vignette.code).toMatch(/^SIM-2026-0[1-6]$/);
+      expect(vignette.anamnesis.length).toBeGreaterThan(20);
+      expect(vignette.expectedDiagnosis.length).toBeGreaterThan(20);
+      expect(vignette.keyFindings.length).toBeGreaterThanOrEqual(3);
+      expect(vignette.therapeuticRecommendations.length).toBeGreaterThanOrEqual(3);
+
+      // Verify every non-Wechsler battery in vignette.testData computes cleanly via TestRegistry
+      for (const [bId, bData] of Object.entries(vignette.testData)) {
+        const def = TestRegistry.get(bId);
+        expect(def).toBeDefined();
+        if (def) {
+          expect(def.isCompleted(bData)).toBe(true);
+          const calcRes = def.calculate(bData, vignette.demographics);
+          expect(calcRes).toBeDefined();
+        }
+      }
     }
   });
 });

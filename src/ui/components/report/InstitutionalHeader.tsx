@@ -1,14 +1,18 @@
 import React from 'react';
-import { BatteryType } from '../../../core';
+import { BatteryType, DEFAULT_INSTITUTIONAL_BRANDING } from '../../../core';
 
 interface InstitutionalHeaderProps {
   battery: BatteryType;
   reportRef?: string;
+  clinicName?: string;
+  clinicSubtitle?: string;
 }
 
 export const InstitutionalHeader: React.FC<InstitutionalHeaderProps> = ({
   battery,
-  reportRef = 'EXP-2026-CLIN-01',
+  reportRef = DEFAULT_INSTITUTIONAL_BRANDING.reportRef,
+  clinicName = DEFAULT_INSTITUTIONAL_BRANDING.clinicName,
+  clinicSubtitle = DEFAULT_INSTITUTIONAL_BRANDING.clinicSubtitle,
 }) => {
   const fullBatteryTitle =
     battery === 'WISC-V'
@@ -25,10 +29,10 @@ export const InstitutionalHeader: React.FC<InstitutionalHeaderProps> = ({
           </div>
           <div>
             <h2 className="text-xs font-bold tracking-widest text-slate-800 uppercase">
-              Centro de Neuropsicología y Psicología Clínica
+              {clinicName || DEFAULT_INSTITUTIONAL_BRANDING.clinicName}
             </h2>
             <p className="text-[11px] text-slate-500 font-medium">
-              Encabezado de ejemplo para un documento de demostración
+              {clinicSubtitle || DEFAULT_INSTITUTIONAL_BRANDING.clinicSubtitle}
             </p>
           </div>
         </div>
@@ -38,7 +42,7 @@ export const InstitutionalHeader: React.FC<InstitutionalHeaderProps> = ({
             Nº Expediente / Protocolo
           </span>
           <span className="text-xs font-mono font-bold text-slate-800">
-            {reportRef}
+            {reportRef || DEFAULT_INSTITUTIONAL_BRANDING.reportRef}
           </span>
         </div>
       </div>

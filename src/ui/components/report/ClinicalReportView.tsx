@@ -7,6 +7,7 @@ import {
   SubtestId,
   validateAgeAndBattery,
   TestRegistry,
+  DEFAULT_INSTITUTIONAL_BRANDING,
 } from '../../../core';
 import { useOptionalClinicalSession } from '../../context/ClinicalSessionContext';
 import { InstitutionalHeader } from './InstitutionalHeader';
@@ -18,7 +19,7 @@ import { SignatureBlock } from './SignatureBlock';
 import { ProfileScatterChart } from '../charts/ProfileScatterChart';
 import { GaussianBellCurve } from '../charts/GaussianBellCurve';
 import { SdqProfileBarChart } from '../clinical/SdqProfileBarChart';
-import { AlertOctagon, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, CheckCircle2, EyeOff } from 'lucide-react';
 
 export interface ClinicalReportViewProps {
   battery?: BatteryType;
@@ -69,6 +70,12 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
   const subtests = props.subtests ?? session?.subtests ?? {};
   const strengthsWeaknesses = props.strengthsWeaknesses ?? session?.strengthsWeaknesses ?? [];
   const isCompleteCit = props.isCompleteCit !== undefined ? props.isCompleteCit : session?.isCompleteCit ?? false;
+
+  const branding = session?.branding ?? DEFAULT_INSTITUTIONAL_BRANDING;
+  const activeVignette = session?.activeVignette ?? null;
+  const trainingMode = session?.trainingMode ?? false;
+  const isDiagnosisRevealed = session?.isDiagnosisRevealed ?? true;
+  const clinicianHypothesisNotes = session?.clinicianHypothesisNotes ?? '';
 
   // Multi-instrument session data
   const administered = session?.administered ?? {
@@ -165,7 +172,12 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
       {/* 1. Institutional Header & Demographics                              */}
       {/* =================================================================== */}
       <div className="report-instrument-section avoid-break">
-        <InstitutionalHeader battery={battery} />
+        <InstitutionalHeader
+          battery={battery}
+          reportRef={activeVignette ? activeVignette.code : branding.reportRef}
+          clinicName={branding.clinicName}
+          clinicSubtitle={branding.clinicSubtitle}
+        />
 
         <DemographicsTable
           demographics={demographics}
@@ -173,6 +185,83 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
           ageValidation={ageValidation}
         />
       </div>
+
+      {/* =================================================================== */}
+      {/* 1.5 Clinical Case Vignette Anamnesis & Behavioral Observations      */}
+      {/* =================================================================== */}
+      {activeVignette && (
+        <div
+          className="report-instrument-section avoid-break space-y-3 pt-2 border-t border-slate-200"
+          data-testid="report-vignette-section"
+        >
+          <h2 className="report-section text-sm font-bold text-slate-800 uppercase tracking-wide border-b border-slate-300 pb-1">
+            Anamnesis Clínica, Observación Conductual y Síntesis del Caso ({activeVignette.code})
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-800 leading-relaxed">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+              <h4 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider">
+                Motivo de Consulta y Anamnesis
+              </h4>
+              <p>{activeVignette.anamnesis}</p>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+              <h4 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider">
+                Observaciones Conductuales Durante la Prueba
+              </h4>
+              <p>{activeVignette.behavioralObservations}</p>
+            </div>
+          </div>
+
+          {clinicianHypothesisNotes.trim().length > 0 && (
+            <div className="p-3 bg-blue-50/70 rounded-lg border border-blue-200 text-xs text-blue-950 space-y-1">
+              <h4 className="font-bold uppercase text-[11px] tracking-wider">
+                Hipótesis Diagnóstica Formulada por el Evaluador / Alumno:
+              </h4>
+              <p>{clinicianHypothesisNotes}</p>
+            </div>
+          )}
+
+          {trainingMode && !isDiagnosisRevealed ? (
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-300 text-xs text-amber-950 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <EyeOff className="w-4 h-4 text-amber-700 shrink-0" />
+                <span>
+                  <strong>Modo Entrenamiento Activo:</strong> La síntesis diagnóstica de referencia DSM-5-TR y las recomendaciones terapéuticas están ocultas para autoevaluación.
+                </span>
+              </div>
+              {session?.setIsDiagnosisRevealed && (
+                <button
+                  type="button"
+                  onClick={() => session.setIsDiagnosisRevealed(true)}
+                  className="px-3 py-1 rounded-lg bg-amber-800 text-white font-bold text-[11px] hover:bg-amber-700 shrink-0 print:hidden"
+                >
+                  Revelar Diagnóstico
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="p-3 bg-indigo-50/70 rounded-lg border border-indigo-200 text-xs text-indigo-950 space-y-2">
+              <div>
+                <h4 className="font-bold uppercase text-[11px] tracking-wider text-indigo-900">
+                  Juicio Clínico Integrado de Referencia (DSM-5-TR):
+                </h4>
+                <p className="mt-0.5 leading-relaxed">{activeVignette.expectedDiagnosis}</p>
+              </div>
+              <div>
+                <h5 className="font-bold text-[11px] text-indigo-900">
+                  Recomendaciones de Intervención:
+                </h5>
+                <ul className="list-disc list-inside space-y-0.5 mt-0.5">
+                  {activeVignette.therapeuticRecommendations.map((rec, idx) => (
+                    <li key={idx}>{rec}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* =================================================================== */}
       {/* 2. Wechsler Intelligence Battery (WISC-V / WAIS-IV)                */}
@@ -561,6 +650,8 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
         <SignatureBlock
           examinerName={demographics.examiner}
           testDate={demographics.testDate}
+          city={branding.city}
+          specialistRole={branding.specialistRole}
         />
       </div>
     </div>

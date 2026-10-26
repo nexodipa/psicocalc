@@ -14,6 +14,8 @@ import {
   StrengthWeaknessResult,
   SubtestId,
   validateAgeAndBattery,
+  ClinicalVignette,
+  InstitutionalBranding,
 } from '../../core';
 import {
   SdqCalculationResult,
@@ -94,6 +96,20 @@ export interface CatalogFilterState {
   search: string;
   domain: ClinicalDomainId | 'all';
   ageBand: TargetAgeGroup | 'all';
+}
+
+export interface SavedClinicalSession {
+  id: string;
+  label: string;
+  savedAt: string;
+  patientName: string;
+  primaryBattery: BatteryType;
+  activeBatteryIds: string[];
+  demographics: ExtendedPatientDemographics;
+  wiscState: WechslerSessionState;
+  waisState: WechslerSessionState;
+  testData: Record<string, any>;
+  activeVignetteId?: string | null;
 }
 
 export interface ClinicalSessionState {
@@ -214,6 +230,26 @@ export interface ClinicalSessionContextValue {
   loadHtpPreset: (preset: HtpBenchmarkPreset) => void;
   htpReport: HtpNarrativeReport;
   isHtpCompleted: boolean;
+
+  // Clinical Case Simulator & Academic Training Suite
+  activeVignetteId: string | null;
+  activeVignette: ClinicalVignette | null;
+  trainingMode: boolean;
+  setTrainingMode: (val: boolean) => void;
+  isDiagnosisRevealed: boolean;
+  setIsDiagnosisRevealed: (val: boolean) => void;
+  clinicianHypothesisNotes: string;
+  setClinicianHypothesisNotes: (val: string) => void;
+  loadClinicalVignette: (vignetteId: string, openReport?: boolean) => void;
+
+  // Institutional Branding & Local Session Persistence
+  branding: InstitutionalBranding;
+  setBranding: (updater: Partial<InstitutionalBranding>) => void;
+  resetBranding: () => void;
+  savedSessions: SavedClinicalSession[];
+  saveCurrentSession: (label?: string) => void;
+  loadSavedSession: (id: string) => void;
+  deleteSavedSession: (id: string) => void;
 
   // Global Session Actions
   resetFullSession: () => void;

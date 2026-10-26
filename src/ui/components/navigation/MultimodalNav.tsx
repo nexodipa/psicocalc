@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useClinicalSession } from '../../context/ClinicalSessionContext';
 import { ClinicalCategory, ClinicalInstrument } from '../../context/ClinicalSessionTypes';
 import { TestRegistry } from '../../../core/registry/TestRegistry';
+import {
+  ClinicalSimulatorSuite,
+  SimulatorPanelTab,
+} from '../simulator/ClinicalSimulatorSuite';
 import {
   Brain,
   Smile,
@@ -17,6 +21,10 @@ import {
   ShieldAlert,
   Layers,
   Plus,
+  FlaskConical,
+  FolderKanban,
+  Building2,
+  MessageSquareWarning,
 } from 'lucide-react';
 
 interface MultimodalNavProps {
@@ -40,7 +48,15 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
     currentBattery,
     activeBatteryIds,
     activateBattery,
+    savedSessions,
+    activeVignette,
   } = useClinicalSession();
+
+  const [simulatorPanel, setSimulatorPanel] = useState<SimulatorPanelTab>(null);
+
+  const togglePanel = (tab: Exclude<SimulatorPanelTab, null>) => {
+    setSimulatorPanel((prev) => (prev === tab ? null : tab));
+  };
 
   const categories: {
     id: ClinicalCategory;
@@ -230,8 +246,68 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
           </button>
         </div>
 
-        {/* Right: Quick actions (Demo, Reset, Print) */}
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+        {/* Right: Quick actions (Simulator, Sessions, Branding, Feedback, Demo, Reset, Print) */}
+        <div className="flex items-center gap-1.5 w-full md:w-auto justify-end flex-wrap">
+          <button
+            type="button"
+            data-testid="open-simulator-drawer-btn"
+            onClick={() => togglePanel('simulator')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all border ${
+              simulatorPanel === 'simulator' || activeVignette
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-400 shadow-xs'
+                : 'bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 border-indigo-700/80'
+            }`}
+            title="Abrir Simulador Interactivo de Casos Clínicos Ficticios (6 Viñetas)"
+          >
+            <FlaskConical className="w-3.5 h-3.5 text-indigo-300" />
+            <span>Simulador de Casos (6)</span>
+          </button>
+
+          <button
+            type="button"
+            data-testid="open-sessions-drawer-btn"
+            onClick={() => togglePanel('sessions')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              simulatorPanel === 'sessions'
+                ? 'bg-emerald-700 text-white border-emerald-500'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Guardar o restaurar expedientes clínicos en el navegador"
+          >
+            <FolderKanban className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Expedientes ({savedSessions.length})</span>
+          </button>
+
+          <button
+            type="button"
+            data-testid="open-branding-drawer-btn"
+            onClick={() => togglePanel('branding')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              simulatorPanel === 'branding'
+                ? 'bg-amber-600 text-white border-amber-400'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Personalizar membrete institucional del informe PDF"
+          >
+            <Building2 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Membrete PDF</span>
+          </button>
+
+          <button
+            type="button"
+            data-testid="open-feedback-drawer-btn"
+            onClick={() => togglePanel('feedback')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              simulatorPanel === 'feedback'
+                ? 'bg-rose-700 text-white border-rose-500'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Reportar ajuste de baremo o sugerencia clínica"
+          >
+            <MessageSquareWarning className="w-3.5 h-3.5 text-rose-400" />
+            <span>Reportar Ajuste</span>
+          </button>
+
           <button
             type="button"
             onClick={loadDemoSession}
@@ -264,6 +340,12 @@ export const MultimodalNav: React.FC<MultimodalNavProps> = ({ onPrint }) => {
           )}
         </div>
       </div>
+
+      {/* 1.5 Interactive Clinical Case Simulator Drawer & Active Case Banner */}
+      <ClinicalSimulatorSuite
+        activePanel={simulatorPanel}
+        onSelectPanel={setSimulatorPanel}
+      />
 
       {/* 2. Primary Multimodal Category Tabs */}
       <div className="bg-white rounded-2xl p-1.5 border border-slate-200 shadow-xs">

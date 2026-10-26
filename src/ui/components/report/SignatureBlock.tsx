@@ -1,13 +1,18 @@
 import React from 'react';
+import { DEFAULT_INSTITUTIONAL_BRANDING } from '../../../core';
 
 interface SignatureBlockProps {
   examinerName: string;
   testDate: string;
+  city?: string;
+  specialistRole?: string;
 }
 
 export const SignatureBlock: React.FC<SignatureBlockProps> = ({
   examinerName,
   testDate,
+  city = DEFAULT_INSTITUTIONAL_BRANDING.city,
+  specialistRole = DEFAULT_INSTITUTIONAL_BRANDING.specialistRole,
 }) => {
   // Format long date in Spanish, e.g. "22 de septiembre de 2026"
   const formattedDate = React.useMemo(() => {
@@ -36,7 +41,7 @@ export const SignatureBlock: React.FC<SignatureBlockProps> = ({
             Lugar y fecha de emisión:
           </p>
           <p className="font-bold text-slate-900">
-            En Madrid, a {formattedDate}.
+            En {city || DEFAULT_INSTITUTIONAL_BRANDING.city}, a {formattedDate}.
           </p>
           <p className="text-[11px] text-slate-500 pt-3 max-w-xs">
             Espacio de firma de ejemplo. Documento de demostración, sin validez clínica ni pericial.
@@ -57,7 +62,7 @@ export const SignatureBlock: React.FC<SignatureBlockProps> = ({
                 Fdo.: {examinerName || 'Lic. Profesional Evaluador'}
               </p>
               <p className="text-[11px] text-slate-600">
-                Psicólogo/a Colegiado/a Especialista
+                {specialistRole || DEFAULT_INSTITUTIONAL_BRANDING.specialistRole}
               </p>
             </div>
           </div>

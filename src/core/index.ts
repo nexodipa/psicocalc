@@ -57,3 +57,4 @@ export * from './types/nonverbal';
 export * from './tables/nonverbalNorms';
 export * from './engine/raven2Calculator';
 export * from './engine/extendedSuiteCalculators';
+export * from './data/clinicalVignettes';

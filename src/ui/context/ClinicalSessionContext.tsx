@@ -6,6 +6,9 @@ import {
   calculateWaisIV,
   validateAgeAndBattery,
   validateScaledScore,
+  CLINICAL_VIGNETTES,
+  DEFAULT_INSTITUTIONAL_BRANDING,
+  InstitutionalBranding,
 } from '../../core';
 import {
   calculateSdq,
@@ -29,7 +32,6 @@ import {
   ClinicalCategory,
   ClinicalInstrument,
   ClinicalSessionContextValue,
-  ClinicalSessionState,
   ExtendedPatientDemographics,
   WechslerSessionState,
   SdqSessionState,
@@ -38,8 +40,33 @@ import {
   MocaSessionState,
   AdministeredInstruments,
   CatalogFilterState,
+  SavedClinicalSession,
 } from './ClinicalSessionTypes';
 import { anonymizeName } from '../hooks/usePsychometrics';
+
+const SAVED_SESSIONS_STORAGE_KEY = 'psicocalc_saved_sessions_v1';
+
+function readStoredSessions(): SavedClinicalSession[] {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return [];
+    const raw = window.localStorage.getItem(SAVED_SESSIONS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredSessions(sessions: SavedClinicalSession[]) {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(SAVED_SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+    }
+  } catch {
+    // Ignore storage quota errors in sandboxed environments
+  }
+}
 
 // Default initial state presets
 const INITIAL_DEMOGRAPHICS: ExtendedPatientDemographics = {
@@ -197,6 +224,36 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     educationYears: INITIAL_DEMOGRAPHICS.educationYears ?? 12,
   });
   const [htpRecord, setHtpRecordState] = useState<HtpAssessmentRecord>({ ...INITIAL_HTP_RECORD });
+
+  // 6. Clinical Case Simulator & Academic Training Suite state
+  const [activeVignetteId, setActiveVignetteId] = useState<string | null>(null);
+  const [trainingMode, setTrainingModeState] = useState<boolean>(false);
+  const [isDiagnosisRevealed, setIsDiagnosisRevealed] = useState<boolean>(true);
+  const [clinicianHypothesisNotes, setClinicianHypothesisNotes] = useState<string>('');
+  const [branding, setBrandingState] = useState<InstitutionalBranding>({
+    ...DEFAULT_INSTITUTIONAL_BRANDING,
+  });
+  const [savedSessions, setSavedSessions] = useState<SavedClinicalSession[]>(() =>
+    readStoredSessions()
+  );
+
+  const activeVignette = useMemo(() => {
+    if (!activeVignetteId) return null;
+    return CLINICAL_VIGNETTES.find((v) => v.id === activeVignetteId) ?? null;
+  }, [activeVignetteId]);
+
+  const setTrainingMode = useCallback((val: boolean) => {
+    setTrainingModeState(val);
+    setIsDiagnosisRevealed(!val);
+  }, []);
+
+  const setBranding = useCallback((updater: Partial<InstitutionalBranding>) => {
+    setBrandingState((prev) => ({ ...prev, ...updater }));
+  }, []);
+
+  const resetBranding = useCallback(() => {
+    setBrandingState({ ...DEFAULT_INSTITUTIONAL_BRANDING });
+  }, []);
 
   // --------------------------------------------------------------------------
   // Layer 2 Battery Partition Operations
@@ -784,9 +841,165 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
   }, [administered, testData]);
 
   // --------------------------------------------------------------------------
+  // Clinical Case Simulator Vignette Loader & Local Sessions
+  // --------------------------------------------------------------------------
+  const loadClinicalVignette = useCallback(
+    (vignetteId: string, openReport = false) => {
+      const vignette = CLINICAL_VIGNETTES.find((v) => v.id === vignetteId);
+      if (!vignette) return;
+
+      setActiveVignetteId(vignette.id);
+      setIsDiagnosisRevealed(!trainingMode);
+      setClinicianHypothesisNotes('');
+
+      setDemographicsState({ ...vignette.demographics });
+      setOriginalName(vignette.demographics.nameOrId);
+      setCurrentBatteryState(vignette.primaryBattery);
+
+      const nextWiscSubtests = vignette.wiscSubtests ? { ...vignette.wiscSubtests } : {};
+      const nextWiscRaw: Record<string, string> = {};
+      Object.entries(nextWiscSubtests).forEach(([k, v]) => {
+        nextWiscRaw[k] = String(v);
+      });
+      const nextWisc: WechslerSessionState = {
+        subtests: nextWiscSubtests,
+        rawInputs: nextWiscRaw,
+        invalidSubtests: {},
+      };
+
+      const nextWaisSubtests = vignette.waisSubtests ? { ...vignette.waisSubtests } : {};
+      const nextWaisRaw: Record<string, string> = {};
+      Object.entries(nextWaisSubtests).forEach(([k, v]) => {
+        nextWaisRaw[k] = String(v);
+      });
+      const nextWais: WechslerSessionState = {
+        subtests: nextWaisSubtests,
+        rawInputs: nextWaisRaw,
+        invalidSubtests: {},
+      };
+
+      setWiscState(nextWisc);
+      setWaisState(nextWais);
+
+      const nextSdq: SdqSessionState = vignette.testData.sdq
+        ? JSON.parse(JSON.stringify(vignette.testData.sdq))
+        : { informant: 'parent', responses: {} };
+      const nextPhq9: Phq9SessionState = vignette.testData.phq_9
+        ? JSON.parse(JSON.stringify(vignette.testData.phq_9))
+        : { responses: {} };
+      const nextGad7: Gad7SessionState = vignette.testData.gad_7
+        ? JSON.parse(JSON.stringify(vignette.testData.gad_7))
+        : { responses: {} };
+      const nextMoca: MocaSessionState = vignette.testData.moca
+        ? JSON.parse(JSON.stringify(vignette.testData.moca))
+        : { domains: { ...INITIAL_MOCA_DOMAINS }, educationYears: vignette.demographics.educationYears };
+      const nextHtp: HtpAssessmentRecord = vignette.testData.htp
+        ? JSON.parse(JSON.stringify(vignette.testData.htp))
+        : { ...INITIAL_HTP_RECORD };
+
+      setSdqState(nextSdq);
+      setPhq9State(nextPhq9);
+      setGad7State(nextGad7);
+      setMocaState(nextMoca);
+      setHtpRecordState(nextHtp);
+
+      const mergedTestData: Record<string, any> = {
+        wisc_v: nextWisc,
+        wais_iv: nextWais,
+        sdq: nextSdq,
+        phq_9: nextPhq9,
+        gad_7: nextGad7,
+        moca: nextMoca,
+        htp: nextHtp,
+        ...JSON.parse(JSON.stringify(vignette.testData)),
+      };
+      setTestData(mergedTestData);
+
+      const mergedActiveIds = Array.from(
+        new Set([...DEFAULT_ACTIVE_BATTERY_IDS, ...vignette.activeBatteryIds])
+      );
+      setActiveBatteryIds(mergedActiveIds);
+
+      if (openReport) {
+        setActiveCategory('report');
+      } else {
+        setActiveInstrument(vignette.defaultInstrumentView);
+        setActiveCategory('intelligence');
+      }
+    },
+    [trainingMode]
+  );
+
+  const saveCurrentSession = useCallback(
+    (label?: string) => {
+      const id = `session-${Date.now()}`;
+      const newEntry: SavedClinicalSession = {
+        id,
+        label: label?.trim() || `${demographics.nameOrId} (${demographics.testDate})`,
+        savedAt: new Date().toISOString(),
+        patientName: demographics.nameOrId,
+        primaryBattery: currentBattery,
+        activeBatteryIds: [...activeBatteryIds],
+        demographics: { ...demographics },
+        wiscState: JSON.parse(JSON.stringify(wiscState)),
+        waisState: JSON.parse(JSON.stringify(waisState)),
+        testData: JSON.parse(JSON.stringify(testData)),
+        activeVignetteId,
+      };
+      setSavedSessions((prev) => {
+        const next = [newEntry, ...prev].slice(0, 20);
+        writeStoredSessions(next);
+        return next;
+      });
+    },
+    [
+      demographics,
+      currentBattery,
+      activeBatteryIds,
+      wiscState,
+      waisState,
+      testData,
+      activeVignetteId,
+    ]
+  );
+
+  const loadSavedSession = useCallback((id: string) => {
+    setSavedSessions((prev) => {
+      const target = prev.find((s) => s.id === id);
+      if (!target) return prev;
+
+      setDemographicsState({ ...target.demographics });
+      setOriginalName(target.demographics.nameOrId);
+      setCurrentBatteryState(target.primaryBattery);
+      setWiscState(JSON.parse(JSON.stringify(target.wiscState)));
+      setWaisState(JSON.parse(JSON.stringify(target.waisState)));
+      const loadedData = JSON.parse(JSON.stringify(target.testData));
+      setTestData(loadedData);
+      if (loadedData.sdq) setSdqState(loadedData.sdq);
+      if (loadedData.phq_9) setPhq9State(loadedData.phq_9);
+      if (loadedData.gad_7) setGad7State(loadedData.gad_7);
+      if (loadedData.moca) setMocaState(loadedData.moca);
+      if (loadedData.htp) setHtpRecordState(loadedData.htp);
+      setActiveBatteryIds(target.activeBatteryIds || DEFAULT_ACTIVE_BATTERY_IDS);
+      setActiveVignetteId(target.activeVignetteId ?? null);
+      return prev;
+    });
+  }, []);
+
+  const deleteSavedSession = useCallback((id: string) => {
+    setSavedSessions((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      writeStoredSessions(next);
+      return next;
+    });
+  }, []);
+
+  // --------------------------------------------------------------------------
   // Global Session Reset & Demo Loader
   // --------------------------------------------------------------------------
   const resetFullSession = useCallback(() => {
+    setActiveVignetteId(null);
+    setClinicianHypothesisNotes('');
     setDemographicsState({ ...INITIAL_DEMOGRAPHICS });
     setOriginalName(INITIAL_DEMOGRAPHICS.nameOrId);
     setWiscState({ subtests: {}, rawInputs: {}, invalidSubtests: {} });
@@ -809,6 +1022,7 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
   }, []);
 
   const loadDemoSession = useCallback(() => {
+    setActiveVignetteId(null);
     setDemographicsState({
       nameOrId: 'Lucas Fernández Gómez',
       birthDate: '2016-04-08',
@@ -932,6 +1146,24 @@ export const ClinicalSessionProvider: React.FC<{ children: React.ReactNode }> = 
     loadHtpPreset,
     htpReport,
     isHtpCompleted,
+
+    activeVignetteId,
+    activeVignette,
+    trainingMode,
+    setTrainingMode,
+    isDiagnosisRevealed,
+    setIsDiagnosisRevealed,
+    clinicianHypothesisNotes,
+    setClinicianHypothesisNotes,
+    loadClinicalVignette,
+
+    branding,
+    setBranding,
+    resetBranding,
+    savedSessions,
+    saveCurrentSession,
+    loadSavedSession,
+    deleteSavedSession,
 
     resetFullSession,
     loadDemoSession,
