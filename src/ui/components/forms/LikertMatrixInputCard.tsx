@@ -781,7 +781,7 @@ export const LikertMatrixInputCard: React.FC<LikertMatrixInputCardProps> = ({ ba
         </div>
       )}
 
-      {/* 2.5 Live Vector SVG Psychogram (Q-global / TEA Corrige Style) */}
+      {/* 2.5 Live Vector SVG Psychogram  */}
       {answeredCount > 0 && (
         <div
           className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs"

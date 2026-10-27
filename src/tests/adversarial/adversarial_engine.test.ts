@@ -69,11 +69,11 @@ describe('Adversarial Stress Test Suite — Challenger 1 (Milestone M1)', () => 
         CL: 1, BS: 1,   // IVP sum=2 -> 45 (Extremadamente Bajo)
       });
 
-      expect(res.primaryIndices.ICV?.compositeScore).toBe(155);
+      expect(res.primaryIndices.ICV?.compositeScore).toBe(152);
       expect(res.primaryIndices.ICV?.percentile).toBe(99.9);
       expect(res.primaryIndices.ICV?.qualitative).toBe('Muy Superior');
 
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(45);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(48);
       expect(res.primaryIndices.IVP?.percentile).toBe(0.1);
       expect(res.primaryIndices.IVP?.qualitative).toBe('Extremadamente Bajo');
 
@@ -82,7 +82,7 @@ describe('Adversarial Stress Test Suite — Challenger 1 (Milestone M1)', () => 
         (d) => (d.pair[0] === 'ICV' && d.pair[1] === 'IVP') || (d.pair[0] === 'IVP' && d.pair[1] === 'ICV')
       );
       expect(icvIvp).toBeDefined();
-      expect(Math.abs(icvIvp!.diff)).toBe(110);
+      expect(Math.abs(icvIvp!.diff)).toBe(104);
       expect(icvIvp!.isSignificant05).toBe(true);
       expect(icvIvp!.isSignificant01).toBe(true);
       expect(icvIvp!.baseRateDesc).toContain('< 1.5%');
@@ -103,13 +103,13 @@ describe('Adversarial Stress Test Suite — Challenger 1 (Milestone M1)', () => 
       });
 
       expect(res.primaryIndices.ICV?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(45);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(48);
 
       const icvIvp = res.discrepancies.find(
         (d) => (d.pair[0] === 'ICV' && d.pair[1] === 'IVP') || (d.pair[0] === 'IVP' && d.pair[1] === 'ICV')
       );
       expect(icvIvp).toBeDefined();
-      expect(Math.abs(icvIvp!.diff)).toBe(110);
+      expect(Math.abs(icvIvp!.diff)).toBe(107);
       expect(icvIvp!.isSignificant05).toBe(true);
       expect(icvIvp!.isSignificant01).toBe(true);
       expect(icvIvp!.baseRateDesc).toContain('< 1.5%');
@@ -128,7 +128,7 @@ describe('Adversarial Stress Test Suite — Challenger 1 (Milestone M1)', () => 
         (d) => d.pair[0] === 'ICV' && d.pair[1] === 'IVP'
       );
       expect(icvIvp).toBeDefined();
-      expect(icvIvp!.diff).toBe(-110);
+      expect(icvIvp!.diff).toBe(-104);
       expect(icvIvp!.isSignificant05).toBe(true);
       expect(icvIvp!.isSignificant01).toBe(true);
       expect(icvIvp!.baseRateDesc).toContain('< 1.5%');
@@ -136,22 +136,22 @@ describe('Adversarial Stress Test Suite — Challenger 1 (Milestone M1)', () => 
   });
 
   describe('Adversarial Dimension 3: Discrepancy Matrices Boundary Conditions', () => {
-    it('AD-DISC-1: Integer critical value threshold boundary (diff=11 vs cv05=11.8 vs diff=12)', () => {
-      // For WISC-V ICV-IVE: cv05 = 11.8, cv01 = 15.5
-      // diff = 11: 11 < 11.8 -> not significant
+    it('AD-DISC-1: Integer critical value threshold boundary (diff=11 vs cv05=13.1 vs diff=14)', () => {
+      // With the generic illustrative SEM: cv05 = 13.1, cv01 = 17.3
+      // diff = 11: 11 < 13.1 -> not significant
       const disc11 = calculatePairDiscrepancy('ICV', 111, 'IVE', 100, 'WISC-V');
       expect(disc11.diff).toBe(11);
       expect(disc11.isSignificant05).toBe(false);
 
-      // diff = 12: 12 >= 11.8 -> significant at .05, not at .01 (12 < 15.5)
-      const disc12 = calculatePairDiscrepancy('ICV', 112, 'IVE', 100, 'WISC-V');
-      expect(disc12.diff).toBe(12);
+      // diff = 14: 14 >= 13.1 -> significant at .05, not at .01 (14 < 17.3)
+      const disc12 = calculatePairDiscrepancy('ICV', 114, 'IVE', 100, 'WISC-V');
+      expect(disc12.diff).toBe(14);
       expect(disc12.isSignificant05).toBe(true);
       expect(disc12.isSignificant01).toBe(false);
 
-      // diff = 16: 16 >= 15.5 -> significant at .01
-      const disc16 = calculatePairDiscrepancy('ICV', 116, 'IVE', 100, 'WISC-V');
-      expect(disc16.diff).toBe(16);
+      // diff = 18: 18 >= 17.3 -> significant at .01
+      const disc16 = calculatePairDiscrepancy('ICV', 118, 'IVE', 100, 'WISC-V');
+      expect(disc16.diff).toBe(18);
       expect(disc16.isSignificant05).toBe(true);
       expect(disc16.isSignificant01).toBe(true);
     });

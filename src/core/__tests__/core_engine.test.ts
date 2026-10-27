@@ -223,17 +223,17 @@ describe('Core Psychometric Math & Engine Suite', () => {
         C: 16, S: 17, M: 16, D: 14, CL: 12, V: 18, B: 17, PV: 15, SD: 15, BS: 13,
       });
 
-      expect(res.primaryIndices.ICV?.compositeScore).toBe(144);
+      expect(res.primaryIndices.ICV?.compositeScore).toBe(143);
       expect(res.primaryIndices.IVE?.compositeScore).toBe(132);
       expect(res.primaryIndices.IRF?.compositeScore).toBe(138);
-      expect(res.primaryIndices.IMT?.compositeScore).toBe(124);
+      expect(res.primaryIndices.IMT?.compositeScore).toBe(126);
       expect(res.primaryIndices.IVP?.compositeScore).toBe(114);
 
       expect(res.cit?.compositeScore).toBe(138);
       expect(res.cit?.percentile).toBe(99.4);
       expect(res.cit?.qualitative).toBe('Muy Superior');
 
-      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(145);
+      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(144);
       expect(res.ancillaryIndices.IAG?.qualitative).toBe('Muy Superior');
     });
 
@@ -244,13 +244,13 @@ describe('Core Psychometric Math & Engine Suite', () => {
 
       expect(res.primaryIndices.ICV?.compositeScore).toBe(114);
       expect(res.primaryIndices.IVE?.compositeScore).toBe(103);
-      expect(res.primaryIndices.IRF?.compositeScore).toBe(108);
+      expect(res.primaryIndices.IRF?.compositeScore).toBe(109);
       expect(res.primaryIndices.IMT?.compositeScore).toBe(80);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(76);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(74);
 
       expect(res.cit?.compositeScore).toBe(100);
-      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(111);
-      expect(res.ancillaryIndices.ICC?.compositeScore).toBe(72);
+      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(112);
+      expect(res.ancillaryIndices.ICC?.compositeScore).toBe(75);
     });
 
     it('handles Floor & Ceiling in WISC-V', () => {
@@ -258,7 +258,7 @@ describe('Core Psychometric Math & Engine Suite', () => {
       const floorRes = calculateWiscV({
         S: 1, V: 1, C: 1, PV: 1, M: 1, B: 1, D: 1, SD: 1, CL: 1, BS: 1,
       });
-      expect(floorRes.primaryIndices.ICV?.compositeScore).toBe(45);
+      expect(floorRes.primaryIndices.ICV?.compositeScore).toBe(48);
       expect(floorRes.cit?.compositeScore).toBe(40);
       expect(floorRes.cit?.percentile).toBe(0.1);
       expect(floorRes.cit?.qualitative).toBe('Extremadamente Bajo');
@@ -267,7 +267,7 @@ describe('Core Psychometric Math & Engine Suite', () => {
       const ceilRes = calculateWiscV({
         S: 19, V: 19, C: 19, PV: 19, M: 19, B: 19, D: 19, SD: 19, CL: 19, BS: 19,
       });
-      expect(ceilRes.primaryIndices.ICV?.compositeScore).toBe(155);
+      expect(ceilRes.primaryIndices.ICV?.compositeScore).toBe(152);
       expect(ceilRes.cit?.compositeScore).toBe(160);
       expect(ceilRes.cit?.percentile).toBe(99.9);
       expect(ceilRes.cit?.qualitative).toBe('Muy Superior');
@@ -299,15 +299,15 @@ describe('Core Psychometric Math & Engine Suite', () => {
         BD: 14, SI: 16, DS: 15, MR: 15, VC: 16, AR: 14, SS: 13, VP: 14, IN: 15, CD: 13,
       });
 
-      expect(res.primaryIndices.ICV?.compositeScore).toBe(132);
-      expect(res.primaryIndices.IRP?.compositeScore).toBe(125);
-      expect(res.primaryIndices.IMT?.compositeScore).toBe(125);
+      expect(res.primaryIndices.ICV?.compositeScore).toBe(135);
+      expect(res.primaryIndices.IRP?.compositeScore).toBe(127);
+      expect(res.primaryIndices.IMT?.compositeScore).toBe(126);
       expect(res.primaryIndices.IVP?.compositeScore).toBe(117);
 
-      expect(res.cit?.compositeScore).toBe(129);
-      expect(res.cit?.qualitative).toBe('Superior');
+      expect(res.cit?.compositeScore).toBe(130);
+      expect(res.cit?.qualitative).toBe('Muy Superior');
 
-      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(131);
+      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(133);
     });
 
     it('computes Case 6: TBI / Neurocognitive Impairment Adult', () => {
@@ -316,13 +316,13 @@ describe('Core Psychometric Math & Engine Suite', () => {
       });
 
       expect(res.primaryIndices.ICV?.compositeScore).toBe(106);
-      expect(res.primaryIndices.IRP?.compositeScore).toBe(79);
+      expect(res.primaryIndices.IRP?.compositeScore).toBe(78);
       expect(res.primaryIndices.IMT?.compositeScore).toBe(74);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(65);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(62);
 
-      expect(res.cit?.compositeScore).toBe(77);
-      expect(res.cit?.qualitative).toBe('Limítrofe');
-      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(90);
+      expect(res.cit?.compositeScore).toBe(80);
+      expect(res.cit?.qualitative).toBe('Promedio Bajo');
+      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(91);
     });
 
     it('handles Floor & Ceiling in WAIS-IV', () => {

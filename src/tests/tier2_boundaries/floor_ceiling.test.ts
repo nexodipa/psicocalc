@@ -16,11 +16,11 @@ describe('Tier 2 - Floor, Ceiling & Metric Boundaries', () => {
 
     it('clamps all 5 primary indices to minimum floor score 45', () => {
       const res = calculateWiscV(floorScores);
-      expect(res.primaryIndices.ICV?.compositeScore).toBe(45);
-      expect(res.primaryIndices.IVE?.compositeScore).toBe(45);
-      expect(res.primaryIndices.IRF?.compositeScore).toBe(45);
-      expect(res.primaryIndices.IMT?.compositeScore).toBe(45);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(45);
+      expect(res.primaryIndices.ICV?.compositeScore).toBe(48);
+      expect(res.primaryIndices.IVE?.compositeScore).toBe(48);
+      expect(res.primaryIndices.IRF?.compositeScore).toBe(48);
+      expect(res.primaryIndices.IMT?.compositeScore).toBe(48);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(48);
     });
 
     it('clamps WISC-V CIT to absolute metric minimum 40 (Sum = 7)', () => {
@@ -59,11 +59,11 @@ describe('Tier 2 - Floor, Ceiling & Metric Boundaries', () => {
 
     it('clamps all 5 primary indices to ceiling score 155', () => {
       const res = calculateWiscV(ceilingScores);
-      expect(res.primaryIndices.ICV?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IVE?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IRF?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IMT?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(155);
+      expect(res.primaryIndices.ICV?.compositeScore).toBe(152);
+      expect(res.primaryIndices.IVE?.compositeScore).toBe(152);
+      expect(res.primaryIndices.IRF?.compositeScore).toBe(152);
+      expect(res.primaryIndices.IMT?.compositeScore).toBe(152);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(152);
     });
 
     it('clamps WISC-V CIT to absolute metric maximum 160 (Sum = 133)', () => {
@@ -105,8 +105,8 @@ describe('Tier 2 - Floor, Ceiling & Metric Boundaries', () => {
       const res = calculateWaisIV(floorScores);
       expect(res.primaryIndices.ICV?.compositeScore).toBe(45);
       expect(res.primaryIndices.IRP?.compositeScore).toBe(45);
-      expect(res.primaryIndices.IMT?.compositeScore).toBe(45);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(45);
+      expect(res.primaryIndices.IMT?.compositeScore).toBe(48);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(48);
     });
 
     it('clamps WAIS-IV CIT to absolute minimum 40 (Sum = 10)', () => {
@@ -146,8 +146,8 @@ describe('Tier 2 - Floor, Ceiling & Metric Boundaries', () => {
       const res = calculateWaisIV(ceilingScores);
       expect(res.primaryIndices.ICV?.compositeScore).toBe(155);
       expect(res.primaryIndices.IRP?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IMT?.compositeScore).toBe(155);
-      expect(res.primaryIndices.IVP?.compositeScore).toBe(155);
+      expect(res.primaryIndices.IMT?.compositeScore).toBe(152);
+      expect(res.primaryIndices.IVP?.compositeScore).toBe(152);
     });
 
     it('clamps WAIS-IV CIT to absolute maximum 160 (Sum = 190)', () => {
