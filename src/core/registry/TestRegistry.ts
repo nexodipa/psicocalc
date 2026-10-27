@@ -83,11 +83,30 @@ function normalizeSearchText(str: string): string {
   return str.toLowerCase();
 }
 
+/**
+ * Instruments shown in the public build. The others belong to commercial
+ * publishers or have unverified scoring (see AUDITORIA.md) and stay hidden
+ * unless VITE_ENABLE_RESTRICTED_INSTRUMENTS=true (or under the test runner).
+ * This hides them from the interface; their code remains in the repository.
+ */
+export const PUBLIC_INSTRUMENT_IDS: ReadonlySet<string> = new Set(['phq_9', 'gad_7', 'sdq']);
+
+function restrictedInstrumentsEnabled(): boolean {
+  const env = ((import.meta as unknown as { env?: Record<string, string | undefined> }).env) ?? {};
+  return env.MODE === 'test' || env.VITE_ENABLE_RESTRICTED_INSTRUMENTS === 'true';
+}
+
 export class TestRegistryClass {
   private instruments: Map<string, InstrumentDefinition> = new Map();
+  private includeRestricted: boolean;
 
-  constructor() {
+  constructor(options: { includeRestricted?: boolean } = {}) {
+    this.includeRestricted = options.includeRestricted ?? restrictedInstrumentsEnabled();
     this.registerDefaultInstruments();
+  }
+
+  private isVisible(id: string): boolean {
+    return this.includeRestricted || PUBLIC_INSTRUMENT_IDS.has(id);
   }
 
   public register(instrument: InstrumentDefinition): void {
@@ -95,15 +114,15 @@ export class TestRegistryClass {
   }
 
   public get(id: string): InstrumentDefinition | undefined {
-    return this.instruments.get(id);
+    return this.isVisible(id) ? this.instruments.get(id) : undefined;
   }
 
   public has(id: string): boolean {
-    return this.instruments.has(id);
+    return this.isVisible(id) && this.instruments.has(id);
   }
 
   public getAll(): InstrumentDefinition[] {
-    return Array.from(this.instruments.values());
+    return Array.from(this.instruments.values()).filter((inst) => this.isVisible(inst.metadata.id));
   }
 
   public getByDomain(domain: ClinicalDomainId): InstrumentDefinition[] {
@@ -885,7 +904,7 @@ export class TestRegistryClass {
         targetGroups: ['child', 'adolescent'],
         estimatedMinutes: 10,
         keywords: ['sdq', 'goodman', 'conducta', 'emocional', 'hiperactividad', 'prosocial'],
-        normReference: 'Goodman (1997, 2001)',
+        normReference: 'Goodman (1997, 2001). Textos de ítems no oficiales: usar la versión oficial de sdqinfo.org antes de cualquier uso real',
       },
       createInitialState: () => ({ informant: 'parent', responses: {} }),
       calculate: (input) => calculateSdq(input),

@@ -137,8 +137,8 @@ describe('Multimodal Navigation, Reactive Visuals & Clinical Report Suite (R3)',
       expect(banner).toBeDefined();
       expect(screen.getByText(/Alerta Deontológica: Riesgo de Autolesión o Ideación Suicida/i)).toBeDefined();
       expect(screen.getByText(/Varios días \(1\)/i)).toBeDefined();
-      expect(screen.getByText(/Protocolo de Actuación Pericial y Asistencial Obligatorio/i)).toBeDefined();
-      expect(screen.getByText(/Línea 024 de Atención a la Conducta Suicida/i)).toBeDefined();
+      expect(screen.getByText(/Respuesta distinta de cero en el ítem 9/i)).toBeDefined();
+      expect(screen.getByText(/servicios de emergencia de tu país/i)).toBeDefined();
     });
 
     it('renders alert banner for item 9 = 2 and 3', () => {

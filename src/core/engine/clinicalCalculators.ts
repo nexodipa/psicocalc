@@ -409,7 +409,7 @@ export function checkPhq9SuicideAlert(item9Score: number): Phq9SuicideAlert {
       clinicalActionRequired: true,
       clinicalNote:
         'Respuesta afirmativa en el ítem 9 (pensamientos de muerte o deseos de lastimarse). ' +
-        'Se requiere exploración pericial/clínica inmediata del plan, letalidad, acceso a medios y red de apoyo.'
+        'Se requiere revisión clínica por una persona cualificada.'
     };
   }
 

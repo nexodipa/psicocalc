@@ -252,7 +252,7 @@ export const Phq9InputCard: React.FC = () => {
             <p className="font-bold text-slate-800">Juicio Clínico e Interpretación:</p>
             <p className="text-slate-600">{phq9Calculation.interpretation}</p>
             <p className="text-slate-600 mt-1">
-              <strong>Recomendación pericial:</strong> {phq9Calculation.recommendation}
+              <strong>Orientación de cribado:</strong> {phq9Calculation.recommendation}
             </p>
           </div>
         </div>

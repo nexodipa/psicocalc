@@ -48,7 +48,7 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({
           title={
             demographics.isAnonymized
               ? 'Restaurar nombre original'
-              : 'Anonimizar nombre a iniciales (cumplimiento pericial y protección de datos)'
+              : 'Anonimizar nombre a iniciales (protección de datos)'
           }
         >
           {demographics.isAnonymized ? (

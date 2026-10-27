@@ -351,7 +351,7 @@ describe('Adversarial Verification Suite — Challenger 2 (Milestone M8 - Tier 5
       expect(banner1.getAttribute('role')).toBe('alert');
       expect(banner1.getAttribute('aria-live')).toBe('assertive');
       expect(within(banner1).getByText(/Ítem 9 = Varios días \(1\)/i)).toBeDefined();
-      expect(within(banner1).getByText(/Línea 024 de Atención a la Conducta Suicida/i)).toBeDefined();
+      expect(within(banner1).getByText(/servicios de emergencia de tu país/i)).toBeDefined();
 
       // Cycle 4: User transitions Item 9 to 2 ('Más de la mitad de los días')
       const btnOpt2 = within(item9Row).getByRole('button', { name: /^2/ });
