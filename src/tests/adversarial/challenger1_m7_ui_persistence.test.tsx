@@ -312,8 +312,8 @@ describe('Empirical Challenger 1 — Milestone M7: Multimodal Navigation & React
       expect(banner).toBeDefined();
       expect(screen.getByText(/Alerta Deontológica: Riesgo de Autolesión o Ideación Suicida/i)).toBeDefined();
       expect(screen.getByText(/Varios días \(1\)/i)).toBeDefined();
-      expect(screen.getByText(/Protocolo de Actuación Pericial y Asistencial Obligatorio/i)).toBeDefined();
-      expect(screen.getByText(/Línea 024 de Atención a la Conducta Suicida/i)).toBeDefined();
+      expect(screen.getByText(/Respuesta distinta de cero en el ítem 9/i)).toBeDefined();
+      expect(screen.getByText(/servicios de emergencia de tu país/i)).toBeDefined();
 
       // Transition to score 2
       rerender(<Phq9SuicideAlertBanner item9Score={2} />);

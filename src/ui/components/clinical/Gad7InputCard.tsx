@@ -216,10 +216,10 @@ export const Gad7InputCard: React.FC = () => {
           </div>
 
           <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
-            <p className="font-bold text-slate-800">Interpretación Pericial de Ansiedad:</p>
+            <p className="font-bold text-slate-800">Interpretación de cribado de ansiedad:</p>
             <p className="text-slate-600">{gad7Calculation.interpretation}</p>
             <p className="text-slate-600 mt-1">
-              <strong>Recomendación pericial:</strong> {gad7Calculation.recommendation}
+              <strong>Orientación de cribado:</strong> {gad7Calculation.recommendation}
             </p>
           </div>
         </div>

@@ -418,7 +418,7 @@ describe('Psicocalc — Milestone M8: Final Adversarial Coverage Hardening (Chal
         const { unmount } = render(React.createElement(Phq9SuicideAlertBanner, { item9Score: score }));
         expect(screen.getByRole('alert')).toBeDefined();
         expect(screen.getByText(/Alerta Deontológica: Riesgo de Autolesión o Ideación Suicida/i)).toBeDefined();
-        expect(screen.getByText(/Línea 024 de Atención a la Conducta Suicida/i)).toBeDefined();
+        expect(screen.getByText(/servicios de emergencia de tu país/i)).toBeDefined();
         expect(screen.getByText(new RegExp(`Ítem 9 = .*\\(${score}\\)`, 'i'))).toBeDefined();
         unmount();
       }

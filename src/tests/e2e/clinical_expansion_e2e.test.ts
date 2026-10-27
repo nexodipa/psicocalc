@@ -416,7 +416,7 @@ describe('Psicocalc — Clinical Expansion E2E Integration Test Suite (Milestone
       expect(screen.getByTestId('report-affective-section')).toBeDefined();
       expect(screen.getByText(/VII\. Sintomatología Afectiva: Depresión y Ansiedad \(PHQ-9 & GAD-7\)/i)).toBeDefined();
       expect(screen.getByTestId('report-suicide-alert')).toBeDefined();
-      expect(screen.getByText(/Alerta Pericial Deontológica: Detección de Riesgo Autolítico/i)).toBeDefined();
+      expect(screen.getByText(/Aviso de cribado: respuesta distinta de cero en el ítem 9/i)).toBeDefined();
       expect(screen.getByText(/PHQ-9 \(Cuestionario de Salud del Paciente - Depresión\)/i)).toBeDefined();
       expect(screen.getAllByText('13').length).toBeGreaterThan(0); // PHQ-9 score
       expect(screen.getByText(/GAD-7 \(Trastorno de Ansiedad Generalizada\)/i)).toBeDefined();
@@ -756,7 +756,7 @@ describe('Psicocalc — Clinical Expansion E2E Integration Test Suite (Milestone
         const { unmount: u1 } = render(h(Phq9SuicideAlertBanner, { item9Score: 1 }));
         expect(screen.getByText(/Alerta Deontológica: Riesgo de Autolesión o Ideación Suicida/i)).toBeDefined();
         expect(screen.getByText(/Varios días \(1\)/i)).toBeDefined();
-        expect(screen.getByText(/024/i)).toBeDefined();
+        expect(screen.getByText(/servicios de emergencia/i)).toBeDefined();
         u1();
 
         // Score 2: Más de la mitad de los días

@@ -479,10 +479,10 @@ export const ClinicalReportView: React.FC<ClinicalReportViewProps> = (props) => 
             <div className="p-3 rounded-lg bg-red-100 border-2 border-red-600 text-red-950 text-xs space-y-1 print-critical-alert" data-testid="report-suicide-alert">
               <div className="flex items-center gap-2 font-black uppercase text-red-900">
                 <AlertOctagon className="w-4 h-4 text-red-700" />
-                <span>⚠️ Alerta Pericial Deontológica: Detección de Riesgo Autolítico (Ítem 9 del PHQ-9 ≥ 1)</span>
+                <span>Aviso de cribado: respuesta distinta de cero en el ítem 9 del PHQ-9</span>
               </div>
               <p className="text-[11px] leading-relaxed text-red-950">
-                El evaluado ha puntuado de forma afirmativa al ítem 9 de pensamientos de muerte o deseos de lastimarse. Se requiere intervención pericial prioritaria, valoración exhaustiva de la intencionalidad/letalidad del plan, movilización de la red de apoyo y activación inmediata del protocolo asistencial de seguridad vital.
+                El evaluado ha puntuado de forma afirmativa al ítem 9 de pensamientos de muerte o deseos de lastimarse. Una persona profesional cualificada debe revisar esta respuesta. Este aviso es una ayuda visual de cribado.
               </p>
             </div>
           )}

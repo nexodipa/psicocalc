@@ -55,3 +55,7 @@ En Windows, ejecutar `launch.bat` o `start.bat` desde la carpeta del proyecto ab
 ---
 
 Proyecto de portafolio de Nexo Digital Partners. Úsalo solo con datos ficticios.
+
+## Instrumentos visibles en la versión pública
+
+La demo pública muestra solo PHQ-9, GAD-7 y SDQ, que son de uso libre. El resto del catálogo (35 instrumentos) pertenece a editoriales comerciales o tiene puntuaciones sin verificar (ver `AUDITORIA.md`), y queda oculto en la interfaz. Se activa con `VITE_ENABLE_RESTRICTED_INSTRUMENTS=true`. Ocultarlos no elimina el código ni el historial de git. Los textos de los ítems del SDQ no son los oficiales: usa la versión de sdqinfo.org antes de cualquier uso real.

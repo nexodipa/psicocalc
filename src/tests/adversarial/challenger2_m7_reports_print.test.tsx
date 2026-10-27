@@ -601,7 +601,7 @@ describe('Adversarial Verification Suite — Challenger 2 (Milestone M7)', () =>
       );
       fireEvent.click(render1.getByRole('button', { name: /Set Item 9/i }));
       expect(render1.getByTestId('report-suicide-alert')).toBeDefined();
-      expect(render1.getByText(/Alerta Pericial Deontológica: Detección de Riesgo Autolítico/i)).toBeDefined();
+      expect(render1.getByText(/Aviso de cribado: respuesta distinta de cero en el ítem 9/i)).toBeDefined();
       render1.unmount();
 
       // Case Item 9 = 3

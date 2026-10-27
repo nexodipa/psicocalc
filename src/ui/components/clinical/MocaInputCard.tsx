@@ -275,7 +275,7 @@ export const MocaInputCard: React.FC = () => {
             <p className="font-bold text-slate-800">Interpretación Neuropsicológica:</p>
             <p className="text-slate-600">{mocaCalculation.interpretation}</p>
             <p className="text-slate-600 mt-1">
-              <strong>Recomendación pericial:</strong> {mocaCalculation.recommendation}
+              <strong>Orientación de cribado:</strong> {mocaCalculation.recommendation}
             </p>
           </div>
         </div>

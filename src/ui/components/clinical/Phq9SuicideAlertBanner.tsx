@@ -42,24 +42,15 @@ export const Phq9SuicideAlertBanner: React.FC<Phq9SuicideAlertBannerProps> = ({ 
 
         <p className="text-xs sm:text-sm font-semibold text-red-900 leading-relaxed">
           El evaluado ha respondido de forma afirmativa al ítem 9: <em>«¿Ha tenido pensamientos de que estaría mejor muerto/a, o de lastimarse de alguna manera?»</em>.
-          Conforme al código deontológico y las directrices clínicas periciales, este indicador exige intervención inmediata y valoración estructurada del riesgo autolítico.
+          Este indicador es una ayuda visual de cribado, no un protocolo clínico. Conviene que una persona profesional cualificada revise la respuesta y actúe según el protocolo de su centro.
         </p>
 
         <div className="p-3.5 bg-white/90 rounded-xl border border-red-300 text-xs text-red-950 space-y-1.5 shadow-sm">
           <div className="flex items-center gap-1.5 font-bold text-red-900">
             <ShieldAlert className="w-4 h-4 text-red-600" />
-            <span>Protocolo de Actuación Pericial y Asistencial Obligatorio:</span>
+            <span>Respuesta distinta de cero en el ítem 9</span>
           </div>
-          <ul className="list-disc list-inside space-y-1 text-[11px] sm:text-xs text-red-900">
-            <li><strong>Evaluación exhaustiva:</strong> Explorar ideación activa, grado de intencionalidad, existencia de un plan estructurado, letalidad del método y acceso a medios letales.</li>
-            <li><strong>Factores de protección:</strong> Identificar red de apoyo sociofamiliar inmediata, razones para vivir y adherencia terapéutica.</li>
-            <li><strong>Medidas de seguridad:</strong> No dejar al paciente solo o sin supervisión. Establecer contrato de seguridad o pacto de no agresión si procede.</li>
-            <li><strong>Derivación y notificación:</strong> Activar protocolo de urgencias en salud mental, contactar al familiar responsable o derivar a Urgencias Psiquiátricas.</li>
-          </ul>
-          <div className="pt-1 flex items-center gap-2 text-[11px] text-red-800 font-semibold border-t border-red-200 mt-2">
-            <PhoneCall className="w-3.5 h-3.5 text-red-700" />
-            <span>Línea 024 de Atención a la Conducta Suicida / Emergencias 112</span>
-          </div>
+          <p className="text-[11px] sm:text-xs text-red-900">Si hay un riesgo inmediato, contacta con los servicios de emergencia de tu país.</p>
         </div>
       </div>
     </div>
