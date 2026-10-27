@@ -9,7 +9,7 @@ Psicocalc es un prototipo de interfaz que muestra cómo se puede capturar puntua
 ## Qué no es
 
 - No es software clínico validado ni cuenta con aval de un colegio profesional, un editor de pruebas o una autoridad sanitaria.
-- No usa las tablas oficiales de baremación de ninguna prueba comercial. Las conversiones de sumas de puntuaciones a índices se calculan por interpolación lineal entre unos pocos puntos de anclaje definidos en el código (`src/core/tables`). Esos resultados son aproximaciones y pueden diferir de los que da el manual oficial.
+- No usa las tablas oficiales de baremación de ninguna prueba comercial. Las conversiones de sumas de puntuaciones a índices usan una fórmula genérica definida en `src/core/tables/normUtils.ts` (suma convertida a puntuación z y reescalada a media 100, desviación 15). Son valores ilustrativos que no coinciden con los del manual oficial.
 - No emite diagnósticos, informes periciales ni certificaciones. El informe que genera lleva marcado que es un documento de demostración.
 - Las pruebas automatizadas no equivalen a una validación clínica ni a una auditoría independiente (ver más abajo).
 
@@ -17,11 +17,13 @@ Psicocalc es un prototipo de interfaz que muestra cómo se puede capturar puntua
 
 | Instrumento | Qué hace el prototipo | Aviso |
 | --- | --- | --- |
-| WISC-V y WAIS-IV | Captura de subpruebas, índices aproximados, curva y perfil de fortalezas y debilidades | Pruebas comerciales con derechos reservados. Conversiones aproximadas, no oficiales. No distribuir ni usar con evaluados reales |
+| WISC-V y WAIS-IV | Captura de subpruebas, índices, curva y perfil de fortalezas y debilidades | Pruebas comerciales con derechos reservados. Las conversiones de suma a índice son una fórmula genérica e ilustrativa (media 100, desviación 15) y no reproducen ni aproximan las tablas oficiales. No usar con evaluados reales |
 | SDQ | Cinco subescalas y total de dificultades con categorías de riesgo | Los puntos de corte proceden de la literatura publicada y no están verificados aquí contra su fuente. Comprobar las condiciones de uso del instrumento |
 | PHQ-9 y GAD-7 | Puntuación total y bandas de severidad; aviso visual ante el ítem 9 del PHQ-9 | Son herramientas de cribado, no de diagnóstico. El aviso del ítem 9 es una ayuda visual, no un protocolo clínico |
 | MoCA | Siete dominios, ajuste por escolaridad y punto de corte | El uso clínico del MoCA exige cumplir las condiciones de registro y licencia de sus autores. Verificarlas antes de cualquier uso real |
 | HTP (Casa-Árbol-Persona) | Guía cualitativa de registro y borrador narrativo | La validez de las técnicas proyectivas es discutida. El texto generado no es un diagnóstico |
+
+El catálogo incluye además otros instrumentos de la lista de pruebas (entre ellos inventarios de personalidad y escalas de conducta adaptativa, varios de ellos comerciales). Su lógica de puntuación es solo demostrativa, no está verificada contra los manuales y no debe usarse para evaluar a nadie. Los nombres de pruebas y editoriales se citan como referencia; este proyecto no tiene relación con ellos ni cuenta con su aprobación.
 
 Antes de cualquier uso clínico, comercial o con datos reales, hay que verificar con cada editor o autor las condiciones de licencia de cada instrumento.
 

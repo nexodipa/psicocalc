@@ -113,8 +113,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       expect(icv?.compositeScore).toBe(100);
       expect(icv?.percentile).toBe(50);
       expect(icv?.qualitative).toBe('Promedio');
-      expect(icv?.ci95.lower).toBe(93);
-      expect(icv?.ci95.upper).toBe(107);
+      expect(icv?.ci95.lower).toBe(91);
+      expect(icv?.ci95.upper).toBe(109);
     });
 
     it('calculates superior verbal comprehension (S=16, V=16, I=15 -> Sum=47 -> ICV=132, Muy Superior)', () => {
@@ -122,8 +122,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       const icv = res.primaryIndices.ICV;
       expect(icv).not.toBeNull();
       expect(icv?.sumScaled).toBe(47);
-      expect(icv?.compositeScore).toBe(132);
-      expect(icv?.percentile).toBe(98);
+      expect(icv?.compositeScore).toBe(135);
+      expect(icv?.percentile).toBe(99);
       expect(icv?.qualitative).toBe('Muy Superior');
     });
 
@@ -162,8 +162,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       expect(irp?.compositeScore).toBe(100);
       expect(irp?.percentile).toBe(50);
       expect(irp?.qualitative).toBe('Promedio');
-      expect(irp?.ci95.lower).toBe(92);
-      expect(irp?.ci95.upper).toBe(108);
+      expect(irp?.ci95.lower).toBe(91);
+      expect(irp?.ci95.upper).toBe(109);
     });
 
     it('calculates superior perceptual reasoning (C=14, M=15, PV=14 -> Sum=43 -> IRP=125, Superior)', () => {
@@ -171,8 +171,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       const irp = res.primaryIndices.IRP;
       expect(irp).not.toBeNull();
       expect(irp?.sumScaled).toBe(43);
-      expect(irp?.compositeScore).toBe(125);
-      expect(irp?.percentile).toBe(95);
+      expect(irp?.compositeScore).toBe(127);
+      expect(irp?.percentile).toBe(96);
       expect(irp?.qualitative).toBe('Superior');
     });
 
@@ -191,8 +191,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       const irp = res.primaryIndices.IRP;
       expect(irp).not.toBeNull();
       expect(irp?.sumScaled).toBe(19);
-      expect(irp?.compositeScore).toBe(79);
-      expect(irp?.percentile).toBe(8);
+      expect(irp?.compositeScore).toBe(78);
+      expect(irp?.percentile).toBe(7);
       expect(irp?.qualitative).toBe('Limítrofe');
     });
 
@@ -220,8 +220,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       const imt = res.primaryIndices.IMT;
       expect(imt).not.toBeNull();
       expect(imt?.sumScaled).toBe(29);
-      expect(imt?.compositeScore).toBe(125);
-      expect(imt?.percentile).toBe(95);
+      expect(imt?.compositeScore).toBe(126);
+      expect(imt?.percentile).toBe(96);
       expect(imt?.qualitative).toBe('Superior');
     });
 
@@ -240,7 +240,7 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       const imt = res.primaryIndices.IMT;
       expect(imt).not.toBeNull();
       expect(imt?.sumScaled).toBe(24);
-      expect(imt?.compositeScore).toBe(111);
+      expect(imt?.compositeScore).toBe(112);
       expect(imt?.qualitative).toBe('Promedio Alto');
     });
 
@@ -259,8 +259,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       expect(ivp?.compositeScore).toBe(100);
       expect(ivp?.percentile).toBe(50);
       expect(ivp?.qualitative).toBe('Promedio');
-      expect(ivp?.ci95.lower).toBe(90);
-      expect(ivp?.ci95.upper).toBe(110);
+      expect(ivp?.ci95.lower).toBe(91);
+      expect(ivp?.ci95.upper).toBe(109);
     });
 
     it('calculates high average processing speed (BS=13, CN=13 -> Sum=26 -> IVP=117, Promedio Alto)', () => {
@@ -288,8 +288,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       const ivp = res.primaryIndices.IVP;
       expect(ivp).not.toBeNull();
       expect(ivp?.sumScaled).toBe(7);
-      expect(ivp?.compositeScore).toBe(65);
-      expect(ivp?.percentile).toBe(1);
+      expect(ivp?.compositeScore).toBe(62);
+      expect(ivp?.percentile).toBe(0.6);
       expect(ivp?.qualitative).toBe('Extremadamente Bajo');
     });
 
@@ -311,8 +311,8 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       expect(res.cit?.compositeScore).toBe(100);
       expect(res.cit?.percentile).toBe(50);
       expect(res.cit?.qualitative).toBe('Promedio');
-      expect(res.cit?.ci95.lower).toBe(95);
-      expect(res.cit?.ci95.upper).toBe(105);
+      expect(res.cit?.ci95.lower).toBe(91);
+      expect(res.cit?.ci95.upper).toBe(109);
     });
 
     it('calculates superior CIT (Sum=145 -> CIT=129, Superior)', () => {
@@ -323,9 +323,9 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       expect(res.isCompleteCit).toBe(true);
       expect(res.cit).not.toBeNull();
       expect(res.cit?.sumScaled).toBe(145);
-      expect(res.cit?.compositeScore).toBe(129);
-      expect(res.cit?.percentile).toBe(97);
-      expect(res.cit?.qualitative).toBe('Superior');
+      expect(res.cit?.compositeScore).toBe(130);
+      expect(res.cit?.percentile).toBe(98);
+      expect(res.cit?.qualitative).toBe('Muy Superior');
     });
 
     it('calculates borderline CIT (Sum=65 -> CIT=75, Limítrofe)', () => {
@@ -336,7 +336,7 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       expect(res.isCompleteCit).toBe(true);
       expect(res.cit).not.toBeNull();
       expect(res.cit?.sumScaled).toBe(65);
-      expect(res.cit?.compositeScore).toBe(75);
+      expect(res.cit?.compositeScore).toBe(76);
       expect(res.cit?.percentile).toBe(5);
       expect(res.cit?.qualitative).toBe('Limítrofe');
     });
@@ -395,7 +395,7 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       });
       expect(res.ancillaryIndices.IAG).not.toBeNull();
       expect(res.ancillaryIndices.IAG?.sumScaled).toBe(90);
-      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(131);
+      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(133);
       expect(res.ancillaryIndices.IAG?.qualitative).toBe('Muy Superior');
     });
 
@@ -406,7 +406,7 @@ describe('Tier 1 - WAIS-IV Subtests & Index Conversions', () => {
       });
       expect(res.ancillaryIndices.IAG).not.toBeNull();
       expect(res.ancillaryIndices.IAG?.sumScaled).toBe(52);
-      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(90);
+      expect(res.ancillaryIndices.IAG?.compositeScore).toBe(91);
     });
 
     it('returns null ancillary index when constituent subtests are missing', () => {

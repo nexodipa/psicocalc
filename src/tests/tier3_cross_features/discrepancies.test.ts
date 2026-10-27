@@ -52,16 +52,16 @@ describe('Tier 3 - Pairwise Index Discrepancies & Statistical Significance', () 
         (d) => (d.pair[0] === 'ICV' && d.pair[1] === 'IVP') || (d.pair[0] === 'IVP' && d.pair[1] === 'ICV')
       );
       expect(pair).toBeDefined();
-      expect(Math.abs(pair!.diff)).toBe(22);
+      expect(Math.abs(pair!.diff)).toBe(23);
       expect(pair!.isSignificant05).toBe(true);
       expect(pair!.isSignificant01).toBe(true);
       expect(pair!.baseRateDesc).toBeDefined();
     });
 
     it('flags moderate discrepancy significant at p < .05 but not at p < .01', () => {
-      // For ICV-IVE: cv05 = 11.8, cv01 = 15.5. A diff of 13 should be sig at 0.05, not at 0.01
-      const disc = calculatePairDiscrepancy('ICV', 113, 'IVE', 100, 'WISC-V');
-      expect(disc.diff).toBe(13);
+      // Generic illustrative SEM: cv05 = 13.1, cv01 = 17.3. A diff of 15 should be sig at 0.05, not at 0.01
+      const disc = calculatePairDiscrepancy('ICV', 115, 'IVE', 100, 'WISC-V');
+      expect(disc.diff).toBe(15);
       expect(disc.isSignificant05).toBe(true);
       expect(disc.isSignificant01).toBe(false);
     });

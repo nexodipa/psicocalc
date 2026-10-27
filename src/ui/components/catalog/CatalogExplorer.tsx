@@ -212,7 +212,7 @@ export const CatalogExplorer: React.FC<CatalogExplorerProps> = ({ onSelectInstru
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
-                    Q-Global / TEA Corrige Clinical Suite
+                    Suite de instrumentos (demostración)
                   </span>
                   <span className="text-[10px] font-mono text-slate-400">
                     v3.5 · 6 Dominios Clínicos
